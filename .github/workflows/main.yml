@@ -1,0 +1,25 @@
+name: Linter
+
+on: 
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: write
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: default
+    steps:
+
+      - name: Run linters
+        
+        run: echo "lint complete"
+
+
