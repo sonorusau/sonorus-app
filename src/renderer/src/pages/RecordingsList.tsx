@@ -8,7 +8,8 @@ import {
   UserOutlined,
   PlayCircleOutlined,
   DownloadOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import GlassCard from "../components/GlassCard";
 import GlassButton from "../components/GlassButton";
@@ -300,49 +301,49 @@ function RecordingsList(): JSX.Element {
           filteredRecordings.map((recording) => (
             <GlassCard key={recording.id} padding="md">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                  {/* Heart Area Icon */}
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-white/10">
-                    <HeartOutlined className="text-xl text-white/70" />
-                  </div>
-
+                <div className="flex-1">
                   {/* Recording Info */}
-                  <div className="flex-1">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-white font-semibold text-lg flex-1">
                         {formatHeartArea(recording.heartArea)} Valve
                       </h3>
                       <div 
-                        className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-3"
+                        className="px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ml-3 flex items-center gap-1 justify-center"
                         style={{ 
                           backgroundColor: `${getStatusColor(recording.status)}20`,
                           color: getStatusColor(recording.status),
-                          minWidth: '80px',
-                          textAlign: 'center'
+                          minWidth: '100px'
                         }}
                       >
-                        {recording.status === 'completed' ? '✓' : recording.status === 'flagged' ? '⚠' : '⏳'} 
-                        {recording.status.charAt(0).toUpperCase() + recording.status.slice(1)}
+                        {recording.status === 'completed' ? (
+                          <CheckCircleOutlined />
+                        ) : recording.status === 'flagged' ? (
+                          <ExclamationCircleOutlined />
+                        ) : (
+                          <PlayCircleOutlined />
+                        )}
+                        <span>{recording.status.charAt(0).toUpperCase() + recording.status.slice(1)}</span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <UserOutlined className="text-white/60" />
-                        <span className="text-white">{recording.patientName}</span>
+                        <UserOutlined className="text-white/60 flex-shrink-0" />
+                        <span className="text-white truncate">{recording.patientName}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CalendarOutlined className="text-white/60" />
-                        <span className="text-white/70">{recording.date} at {recording.time}</span>
+                        <CalendarOutlined className="text-white/60 flex-shrink-0" />
+                        <span className="text-white/70 truncate">{recording.date} at {recording.time}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <HeartOutlined className="text-white/60" />
+                        <HeartOutlined className="text-white/60 flex-shrink-0" />
                         <span className="text-white/70">{recording.duration}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-white/60">Result:</span>
+                        <HeartOutlined className="text-white/60 flex-shrink-0" />
+                        <span className="text-white/60 flex-shrink-0">Result:</span>
                         <span 
-                          className="font-medium"
+                          className="font-medium truncate"
                           style={{ color: getResultColor(recording.result) }}
                         >
                           {recording.result}
@@ -356,7 +357,6 @@ function RecordingsList(): JSX.Element {
                         <span className="text-white">{recording.notes}</span>
                       </div>
                     )}
-                  </div>
                 </div>
 
                 {/* Actions */}

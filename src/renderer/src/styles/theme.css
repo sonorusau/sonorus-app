@@ -1,5 +1,15 @@
 /* Sonorus Theme Color System */
 :root {
+  /* Theme Variables */
+  --bg-primary: 0 0 0;
+  --bg-secondary: 255 255 255;
+  --text-primary: 255 255 255;
+  --text-secondary: 0 0 0;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(172, 172, 230, 0.3);
+  --glass-bg-hover: rgba(255, 255, 255, 0.15);
+  
+  /* Current theme (dark by default) */
   /* =~= Theme Properties =~= */
   --theme-font-family-base: system-ui;
   --theme-font-family-heading: system-ui;
@@ -144,3 +154,189 @@
 
 .bg-surface { background-color: rgb(var(--color-surface-500)); }
 .text-surface { color: rgb(var(--color-surface-500)); }
+
+/* Dark Theme (Default) */
+.dark-theme {
+  --bg-primary: 0 0 0;
+  --bg-secondary: 255 255 255;
+  --text-primary: 255 255 255;
+  --text-secondary: 0 0 0;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(172, 172, 230, 0.3);
+  --glass-bg-hover: rgba(255, 255, 255, 0.15);
+}
+
+/* Light Theme */
+.light-theme {
+  --bg-primary: 255 255 255;
+  --bg-secondary: 0 0 0;
+  --text-primary: 15 23 42; /* Very dark slate for excellent readability */
+  --text-secondary: 255 255 255;
+  --glass-bg: rgba(248, 250, 252, 0.8); /* Light gray background */
+  --glass-border: rgba(226, 232, 240, 1); /* Light border */
+  --glass-bg-hover: rgba(241, 245, 249, 0.9);
+}
+
+/* Light theme uses dark text on light background - More comprehensive overrides */
+.light-theme .text-white,
+.light-theme h1,
+.light-theme h2, 
+.light-theme h3,
+.light-theme h4,
+.light-theme h5,
+.light-theme h6,
+.light-theme p,
+.light-theme span,
+.light-theme label,
+.light-theme div {
+  color: rgb(15, 23, 42) !important;
+}
+
+.light-theme .text-white\/80 {
+  color: rgba(15, 23, 42, 0.8) !important;
+}
+
+.light-theme .text-white\/70 {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+
+.light-theme .text-white\/60 {
+  color: rgba(15, 23, 42, 0.6) !important;
+}
+
+/* Override all Ant Design text colors in light mode */
+.light-theme .ant-typography,
+.light-theme .ant-typography h1,
+.light-theme .ant-typography h2,
+.light-theme .ant-typography h3,
+.light-theme .ant-typography h4,
+.light-theme .ant-typography h5 {
+  color: rgb(15, 23, 42) !important;
+}
+
+/* Clean light backgrounds */
+.light-theme .bg-white\/10 {
+  background: rgba(248, 250, 252, 0.6) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.light-theme .bg-white\/15 {
+  background: rgba(248, 250, 252, 0.8) !important;
+  border: 1px solid rgba(226, 232, 240, 1) !important;
+}
+
+.light-theme .bg-white\/20 {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(226, 232, 240, 1) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Form elements with clean light theme styling */
+.light-theme .search-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(226, 232, 240, 1) !important;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03) !important;
+}
+
+.light-theme .search-input .ant-input {
+  color: rgb(15, 23, 42) !important;
+  background: transparent !important;
+}
+
+.light-theme .search-input .ant-input::placeholder {
+  color: rgba(15, 23, 42, 0.4) !important;
+}
+
+.light-theme .ant-select-selector {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(226, 232, 240, 1) !important;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03) !important;
+}
+
+.light-theme .ant-select-selection-item {
+  color: rgb(15, 23, 42) !important;
+}
+
+.light-theme .ant-picker {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(226, 232, 240, 1) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .ant-picker input {
+  color: rgb(15, 23, 42) !important;
+}
+
+.light-theme .ant-picker-input > input::placeholder {
+  color: rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Light theme dropdown styling */
+.light-theme .ant-select-dropdown {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(226, 232, 240, 1) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .ant-select-item {
+  color: rgb(15, 23, 42) !important;
+}
+
+.light-theme .ant-select-item:hover {
+  background: rgba(248, 250, 252, 1) !important;
+}
+
+/* Force override all text in light theme - but exclude dark theme */
+.light-theme:not(.dark-theme) * {
+  color: rgb(15, 23, 42) !important;
+}
+
+/* Ensure dark theme text stays white */
+.dark-theme * {
+  color: white !important;
+}
+
+.dark-theme .text-white,
+.dark-theme .text-white\/80,
+.dark-theme .text-white\/70,
+.dark-theme .text-white\/60 {
+  color: white !important;
+}
+
+/* Button text overrides for light theme */
+.light-theme button,
+.light-theme button *,
+.light-theme .ant-btn,
+.light-theme .ant-btn *,
+.light-theme .glass-button,
+.light-theme .glass-button * {
+  color: rgb(15, 23, 42) !important;
+}
+
+/* Exception: Keep some elements with their intended colors */
+.light-theme .text-green-300,
+.light-theme .text-yellow-500,
+.light-theme .text-red-500,
+.light-theme .text-blue-500,
+.light-theme [style*="color: #10b981"],
+.light-theme [style*="color: #f59e0b"],
+.light-theme [style*="color: #ef4444"],
+.light-theme [style*="color: rgb(var(--color-success"],
+.light-theme [style*="color: rgb(var(--color-warning"],
+.light-theme [style*="color: rgb(var(--color-error"] {
+  color: inherit !important;
+}
+
+/* Apply theme variables to common elements */
+.theme-text {
+  color: rgb(var(--text-primary)) !important;
+}
+
+.theme-glass {
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border) !important;
+}
+
+.theme-glass:hover {
+  background: var(--glass-bg-hover) !important;
+}

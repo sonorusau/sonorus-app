@@ -11,6 +11,7 @@ import AddTeamToReposPage from "./pages/AddTeamToReposPage";
 
 import React, { useMemo } from "react";
 import Context from "./store/context";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import "./styles/theme.css";
 import {
   RadiusBottomleftOutlined,
@@ -23,29 +24,31 @@ function App(): JSX.Element {
   const contextValue = useMemo(() => ({ name: "Ant Design" }), []);
 
   return (
-    <Context.Provider value={contextValue}>
-      <HashRouter>
-        <div id="container" className="h-screen w-screen flex">
-          <Routes>
-            <Route index element={<HomePage />} />
-            <Route element={<FeaturePageLayout />}>
-              <Route path="/blank-page" element={<GithubAccessTokenPage />} />
-              <Route path="/patients" element={<AddFiles />} />
-              <Route path="/add-files" element={<AddFiles />} />
-              <Route path="/list-team-repos" element={<ListTeamReposPage />} />
-              <Route path="/quick-scan" element={<ListTeamReposPage />} />
-              <Route path="/pair-device" element={<PairDevice />} />
-              <Route path="/recordings" element={<RecordingsList />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route
-                path="/add-team-to-repos"
-                element={<AddTeamToReposPage />}
-              />
-            </Route>
-          </Routes>
-        </div>
-      </HashRouter>
-    </Context.Provider>
+    <ThemeProvider>
+      <Context.Provider value={contextValue}>
+        <HashRouter>
+          <div id="container" className="h-screen w-screen flex">
+            <Routes>
+              <Route index element={<HomePage />} />
+              <Route element={<FeaturePageLayout />}>
+                <Route path="/blank-page" element={<GithubAccessTokenPage />} />
+                <Route path="/patients" element={<AddFiles />} />
+                <Route path="/add-files" element={<AddFiles />} />
+                <Route path="/list-team-repos" element={<ListTeamReposPage />} />
+                <Route path="/quick-scan" element={<ListTeamReposPage />} />
+                <Route path="/pair-device" element={<PairDevice />} />
+                <Route path="/recordings" element={<RecordingsList />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route
+                  path="/add-team-to-repos"
+                  element={<AddTeamToReposPage />}
+                />
+              </Route>
+            </Routes>
+          </div>
+        </HashRouter>
+      </Context.Provider>
+    </ThemeProvider>
   );
 }
 

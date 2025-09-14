@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Switch, Select, Slider, Input, Divider, notification } from "antd";
+import { useTheme } from "../contexts/ThemeContext";
 import { 
   SettingOutlined,
   WifiOutlined,
@@ -53,6 +54,7 @@ interface SettingsData {
 }
 
 function Settings(): JSX.Element {
+  const { themeMode, isDarkMode, setThemeMode } = useTheme();
   const [settings, setSettings] = useState<SettingsData>({
     // Device Settings
     autoConnect: true,
@@ -188,6 +190,34 @@ function Settings(): JSX.Element {
       )}
 
       <div className="space-y-6">
+        {/* Appearance Settings */}
+        <GlassCard padding="lg">
+          <div className="flex items-center gap-2 mb-6">
+            <SettingOutlined className="text-white text-xl" />
+            <h3 className="text-xl font-semibold text-white">Appearance</h3>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <div>
+              <label className="text-white font-medium mb-2 block">Theme</label>
+              <Select
+                value={themeMode}
+                onChange={(value) => setThemeMode(value as 'dark' | 'light' | 'system')}
+                className="w-full search-input"
+                size="large"
+              >
+                <Option value="system">System</Option>
+                <Option value="dark">Dark</Option>
+                <Option value="light">Light</Option>
+              </Select>
+              <p className="text-white/60 text-sm mt-1">
+                Currently using {isDarkMode ? "dark" : "light"} theme
+                {themeMode === 'system' && ' (from system preference)'}
+              </p>
+            </div>
+          </div>
+        </GlassCard>
+
         {/* Device Settings */}
         <GlassCard padding="lg">
           <div className="flex items-center gap-2 mb-6">
@@ -268,9 +298,9 @@ function Settings(): JSX.Element {
                 onChange={(value) => handleSettingChange('compressionLevel', value)}
                 className="w-full"
               >
-                <Option value="low">Low (Best Quality)</Option>
-                <Option value="medium">Medium (Balanced)</Option>
-                <Option value="high">High (Smaller Files)</Option>
+                <Option value="low">Low</Option>
+                <Option value="medium">Medium</Option>
+                <Option value="high">High</Option>
               </Select>
             </div>
 

@@ -172,10 +172,7 @@ function ListTeamReposPage(): JSX.Element {
             >
               {heartAreas.map((area) => (
                 <Option key={area.key} value={area.key}>
-                  <div>
-                    <div className="font-medium text-white">{area.label}</div>
-                    <div className="text-sm text-white/70 truncate">{area.description}</div>
-                  </div>
+                  {area.label}
                 </Option>
               ))}
             </Select>

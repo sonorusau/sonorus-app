@@ -5,11 +5,13 @@ import {
 } from "@ant-design/icons";
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../contexts/ThemeContext";
 import BackgroundLayout from "../components/BackgroundLayout";
 
 import image from "../assets/sn_primary_logo.png";
 
 function HomePage(): JSX.Element {
+  const { isDarkMode } = useTheme();
   const buttons: {
     text: string;
     path: string;
@@ -86,10 +88,10 @@ function HomePage(): JSX.Element {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold mb-3 tracking-wide text-white">
+                <h3 className={`text-lg font-semibold mb-3 tracking-wide ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                   {buttonContent.text}
                 </h3>
-                <p className="leading-relaxed font-light text-sm text-white/80">
+                <p className={`leading-relaxed font-light text-sm ${isDarkMode ? 'text-white/80' : 'text-slate-600'}`}>
                   {buttonContent.description}
                 </p>
               </div>
@@ -120,7 +122,7 @@ function HomePage(): JSX.Element {
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ backgroundColor: "#8C7DD1" }}
               ></div>
-              <span className="font-medium text-sm text-white">
+              <span className={`font-medium text-sm ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>
                 Trusted Healthcare Technology
               </span>
               <div
@@ -128,7 +130,7 @@ function HomePage(): JSX.Element {
                 style={{ backgroundColor: "#8C7DD1" }}
               ></div>
             </div>
-            <p className="text-center leading-relaxed text-sm font-light text-white/90">
+            <p className={`text-center leading-relaxed text-sm font-light ${isDarkMode ? 'text-white/90' : 'text-slate-600'}`}>
               Rheumatic heart disease is a preventable and manageable condition
               that has been treatable for over 70 years. Our FDA-compliant
               analysis platform helps healthcare providers deliver precise
