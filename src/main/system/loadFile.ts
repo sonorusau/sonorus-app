@@ -10,7 +10,3 @@ export function loadFile(evt, filePath: string): string {
   const content: string = fs.readFileSync(filePath, "utf-8");
   return content;
 }
-
-
-
-

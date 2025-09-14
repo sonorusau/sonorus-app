@@ -35,20 +35,19 @@ export function loadReposFromTxt(): Repo[] {
 function parseRepoListTxt(content: string): Repo[] {
   const lines: string[] = content.split("\n");
   const repos: Repo[] = [];
-  var index = 0;
+  let index = 0;
 
   //Repo {key: number; owner: string; name: string; url: string;}
   // TODO: Map each line into a Repo to fill the repos array.
-  for (var line of lines) {
-
+  for (const line of lines) {
     //Trim whitespace around line
     const trimmedLine = line.trim();
 
     //Skip empty lines
-    if (trimmedLine === '') continue;
+    if (trimmedLine === "") continue;
 
     //Split by format "Owner/Name"
-    const row: string[] = line.split("/")
+    const row: string[] = line.split("/");
 
     //Create new repo instance
     repos.push({
@@ -56,7 +55,7 @@ function parseRepoListTxt(content: string): Repo[] {
       owner: row[0],
       name: row[1],
       url: "",
-    })
+    });
 
     index++;
 

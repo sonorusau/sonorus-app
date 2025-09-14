@@ -10,7 +10,7 @@ import {
   encryptStoreSet,
   encryptStoreGetAllKeys,
   encryptStoreGetAll,
-  encryptStoreDelete
+  encryptStoreDelete,
 } from "./system/encryptStore";
 import { loadFile } from "./system/loadFile";
 
@@ -46,7 +46,6 @@ function createWindow(): void {
   }
 }
 
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -61,17 +60,17 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window);
   });
 
-  const getAll = () => {
+  const getAll = (): void => {
     console.log(store.store);
     console.log(Object.keys(store.store));
-  }
+  };
 
   const store = new Store();
 
   // IPC test
   ipcMain.on("ping", () => console.log("pong"));
   ipcMain.handle("system/loadReposFromTxt", loadReposFromTxt);
- 
+
   ipcMain.handle(
     "system/selectFilesUnderDirectories",
     selectFilesUnderDirectories,
@@ -80,15 +79,14 @@ app.whenReady().then(() => {
 
   ipcMain.handle("system/exportRepostoTxt", (event, repos) => {
     try {
-      console.log(repos)
+      console.log(repos);
       exportRepostoTxt(repos);
       return { success: true };
     } catch (error) {
-      console.error('Error exporting repos:', error);
-      return { success: false};
+      console.error("Error exporting repos:", error);
+      return { success: false };
     }
   });
-
 
   ipcMain.handle("system/encryptStoreDelete", async (_event, key) => {
     return encryptStoreDelete(key);
@@ -125,7 +123,7 @@ app.whenReady().then(() => {
     return true;
   });
 
-  if (true || process.env.TEST) {
+  if (process.env.TEST) {
     getAll();
     const testStoreKey = "testKey";
     store.set(testStoreKey, "testVal");
@@ -138,7 +136,6 @@ app.whenReady().then(() => {
       encryptStoreSet(testStoreKey, "testVal");
     }
   }
-
 
   createWindow();
 

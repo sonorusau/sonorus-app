@@ -7,8 +7,7 @@ export interface Props {
   disabled: boolean;
 }
 
-const exportTxt = async(repos): Promise<void> => {
-    
+const exportTxt = async (repos): Promise<void> => {
   try {
     await window.api.exportRepostoTxt(repos);
   } catch (error) {

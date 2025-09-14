@@ -1,17 +1,29 @@
 import { Button, Input, List, Empty, Popconfirm, Switch } from "antd";
 import Title from "antd/es/typography/Title";
-import React, { createRef, RefObject, useEffect, useRef, useState } from "react";
-import classNames from 'classnames';
-import type { PopconfirmProps } from 'antd';
-import { DeleteOutlined, EyeOutlined, EditOutlined, CheckOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import React, {
+  createRef,
+  RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import classNames from "classnames";
+import type { PopconfirmProps } from "antd";
+import {
+  DeleteOutlined,
+  EyeOutlined,
+  EditOutlined,
+  CheckOutlined,
+  EyeInvisibleOutlined,
+} from "@ant-design/icons";
 import {
   RadiusBottomleftOutlined,
   RadiusBottomrightOutlined,
   RadiusUpleftOutlined,
   RadiusUprightOutlined,
-} from '@ant-design/icons';
-import type { NotificationArgsProps } from 'antd';
-import { notification } from 'antd';
+} from "@ant-design/icons";
+import type { NotificationArgsProps } from "antd";
+import { notification } from "antd";
 import Context from "@renderer/store/context";
 import _default from "vite-tsconfig-paths";
 import "./GithubAccessTokenPage.css";
@@ -19,20 +31,23 @@ import "./GithubAccessTokenPage.css";
 function GithubAccessTokenPage(): JSX.Element {
   const heading = "Github Access Token" as const;
 
-  const keyInputRef: RefObject<any> = useRef(null);
-  const valueInputRef: RefObject<any> = useRef(null);
+  const keyInputRef: RefObject<HTMLInputElement> = useRef(null);
+  const valueInputRef: RefObject<HTMLInputElement> = useRef(null);
   const [api, contextHolder] = notification.useNotification();
   const { invoke } = window.electron.ipcRenderer;
 
-  const [useConfig, setUseConfig] = useState<boolean>(
-    globalThis.useConfig,
-  );
+  const [useConfig, setUseConfig] = useState<boolean>(globalThis.useConfig);
 
-  type NotificationPlacement = NotificationArgsProps['placement'];
+  type NotificationPlacement = NotificationArgsProps["placement"];
 
-  const { encryptStoreGetAll, encryptStoreDelete, encryptStoreSet } = window.api;
+  const { encryptStoreGetAll, encryptStoreDelete, encryptStoreSet } =
+    window.api;
 
-  const openNotification = (placement: NotificationPlacement, heading: string, message: string) => {
+  const openNotification = (
+    placement: NotificationPlacement,
+    heading: string,
+    message: string,
+  ): void => {
     api.info({
       message: heading,
       description: <Context.Consumer>{() => message}</Context.Consumer>,
@@ -40,7 +55,11 @@ function GithubAccessTokenPage(): JSX.Element {
     });
   };
 
-  const openError = (placement: NotificationPlacement, heading: string, message: string) => {
+  const openError = (
+    placement: NotificationPlacement,
+    heading: string,
+    message: string,
+  ): void => {
     api.error({
       message: heading,
       description: <Context.Consumer>{() => message}</Context.Consumer>,
@@ -51,22 +70,24 @@ function GithubAccessTokenPage(): JSX.Element {
   const [tokenKeys, setTokenKeys] = useState<Record<string, string>>({});
   const [tokenBlurredList, setTokenBlurredList] = useState<boolean[]>([]);
   const [tokenEditableList, setTokenEditableList] = useState<boolean[]>([]);
-  const [tokenValueRefList, setTokenValueRefList] = useState<RefObject<HTMLSpanElement>[]>([]);
+  const [tokenValueRefList, setTokenValueRefList] = useState<
+    RefObject<HTMLSpanElement>[]
+  >([]);
 
-  const getAll = () => {
+  const getAll = (): void => {
     encryptStoreGetAll().then((res: Record<string, string>) => {
       setTokenKeys(res);
-      setTokenBlurredList(Object.keys(res).map(_ => true));
-      setTokenEditableList(Object.keys(res).map(_ => false));
-      setTokenValueRefList(Object.keys(res).map(_ => createRef()));
+      setTokenBlurredList(Object.keys(res).map((_) => true));
+      setTokenEditableList(Object.keys(res).map((_) => false));
+      setTokenValueRefList(Object.keys(res).map((_) => createRef()));
     });
-  }
+  };
 
-  const deleteOne = (key: string) => {
+  const deleteOne = (key: string): void => {
     encryptStoreDelete(key).then(() => {
       getAll();
     });
-  }
+  };
 
   useEffect(() => {
     globalThis.useConfig = useConfig;
@@ -76,22 +97,30 @@ function GithubAccessTokenPage(): JSX.Element {
     getAll();
   }, []);
 
-  const saveOneToken = (key: string, value: string) => {
+  const saveOneToken = (key: string, value: string): void => {
     encryptStoreSet(key, value).then(() => {
       getAll();
-      openNotification("bottomLeft", "Token Saved", "The token has successfully been saved.");
-    })
-  }
+      openNotification(
+        "bottomLeft",
+        "Token Saved",
+        "The token has successfully been saved.",
+      );
+    });
+  };
 
-  const saveToken = () => {
+  const saveToken = (): void => {
     const { value: keyInputKey } = keyInputRef.current.input;
     const { value: keyInputValue } = valueInputRef.current.input;
     if (!validateKeyAndValue(keyInputKey, keyInputValue)) {
-      openError("bottomRight", "Token String Error", "Please enter a valid token.");
+      openError(
+        "bottomRight",
+        "Token String Error",
+        "Please enter a valid token.",
+      );
     } else {
       saveOneToken(keyInputKey, keyInputValue);
     }
-  }
+  };
 
   const validateKeyAndValue = (key: string, val: string): boolean => {
     const trimmedVal = val.trim();
@@ -99,11 +128,11 @@ function GithubAccessTokenPage(): JSX.Element {
       return false;
     }
     return true;
-  }
+  };
 
   const keys = Object.keys(tokenKeys);
 
-  const cancel: PopconfirmProps['onCancel'] = (e) => {
+  const cancel: PopconfirmProps["onCancel"] = (e) => {
     console.log(e);
   };
 
@@ -112,9 +141,7 @@ function GithubAccessTokenPage(): JSX.Element {
       {contextHolder}
       <div className="flex gap-4 flex-col">
         <Title level={2}>
-          <div className="dark:text-white">
-          {heading}
-          </div>
+          <div className="dark:text-white">{heading}</div>
         </Title>
         <div className="flex gap-2">
           <span>Use Configuration for Token</span>
@@ -132,34 +159,47 @@ function GithubAccessTokenPage(): JSX.Element {
         <Button
           className="bg-[var(--color-button)] rounded-2xl p-5"
           type="primary"
-          onClick={() => saveToken()} >
+          onClick={() => saveToken()}
+        >
           Save Token
         </Button>
       </div>
-      {keys.length > 0 ?
+      {keys.length > 0 ? (
         <List header={<Title level={3}>List of Tokens</Title>} bordered>
-          {
-            keys.map((item, idx) => (
-              <List.Item key={idx} className="">
-                <div className="flex flex-row w-full justify-between">
-                  <span className="flex flex-row items-center" contentEditable={true}>{item}</span>
-                  <div className="flex flex-row items-center gap-2">
-                    {tokenKeys[item].length === 0 && !tokenEditableList[idx] ?
-                      "Empty" :
-                      <span
-                        contentEditable={tokenEditableList[idx]}
-                        ref={tokenValueRefList[idx]}
-                        className={
-                          classNames("p-1 transition-[filter border] min-w-[100px] duration-[0.1s] ease-[ease-in-out]", {
-                            "blur-md": tokenBlurredList[idx] && !tokenEditableList[idx],
-                            "border-[1px] border-solid border-[gray] rounded-md": tokenEditableList[idx]
-                          })
-                        }>
-                        {tokenBlurredList[idx] && !tokenEditableList[idx] ? "!@90wqdqwe" : tokenKeys[item]}
-                      </span>
-                    }
-                    <div className="flex flex-row items-center justify-end min-w-[80px] gap-2">
-                      {item !== "githubCloud" && item !== "githubEnterpriseServer" &&
+          {keys.map((item, idx) => (
+            <List.Item key={idx} className="">
+              <div className="flex flex-row w-full justify-between">
+                <span
+                  className="flex flex-row items-center"
+                  contentEditable={true}
+                >
+                  {item}
+                </span>
+                <div className="flex flex-row items-center gap-2">
+                  {tokenKeys[item].length === 0 && !tokenEditableList[idx] ? (
+                    "Empty"
+                  ) : (
+                    <span
+                      contentEditable={tokenEditableList[idx]}
+                      ref={tokenValueRefList[idx]}
+                      className={classNames(
+                        "p-1 transition-[filter border] min-w-[100px] duration-[0.1s] ease-[ease-in-out]",
+                        {
+                          "blur-md":
+                            tokenBlurredList[idx] && !tokenEditableList[idx],
+                          "border-[1px] border-solid border-[gray] rounded-md":
+                            tokenEditableList[idx],
+                        },
+                      )}
+                    >
+                      {tokenBlurredList[idx] && !tokenEditableList[idx]
+                        ? "!@90wqdqwe"
+                        : tokenKeys[item]}
+                    </span>
+                  )}
+                  <div className="flex flex-row items-center justify-end min-w-[80px] gap-2">
+                    {item !== "githubCloud" &&
+                      item !== "githubEnterpriseServer" && (
                         <Popconfirm
                           title="Delete the task"
                           description="Are you sure to delete this task?"
@@ -170,39 +210,57 @@ function GithubAccessTokenPage(): JSX.Element {
                         >
                           <Button danger icon={<DeleteOutlined />} />
                         </Popconfirm>
-                      }
-                    </div>
-                    <Button
-                      onClick={() => setTokenBlurredList(prev => {
+                      )}
+                  </div>
+                  <Button
+                    onClick={() =>
+                      setTokenBlurredList((prev) => {
                         return prev.map((item, idx2) => {
                           if (idx === idx2) return !item;
                           return item;
                         });
-                      })}
-                      icon={tokenBlurredList[idx] ? <EyeOutlined /> : <EyeInvisibleOutlined />} />
-                    <Button
-                      onClick={() => {
-                        if (tokenEditableList[idx]) {
-                          saveOneToken(item, tokenValueRefList[idx].current!.innerHTML);
-                        } else {
-                          setTokenEditableList(prev => {
-                            return prev.map((item, idx2) => {
-                              if (idx === idx2) return !item;
-                              return item;
-                            });
-                          })
-                        }
+                      })
+                    }
+                    icon={
+                      tokenBlurredList[idx] ? (
+                        <EyeOutlined />
+                      ) : (
+                        <EyeInvisibleOutlined />
+                      )
+                    }
+                  />
+                  <Button
+                    onClick={() => {
+                      if (tokenEditableList[idx]) {
+                        saveOneToken(
+                          item,
+                          tokenValueRefList[idx].current!.innerHTML,
+                        );
+                      } else {
+                        setTokenEditableList((prev) => {
+                          return prev.map((item, idx2) => {
+                            if (idx === idx2) return !item;
+                            return item;
+                          });
+                        });
                       }
-                      }
-                      icon={tokenEditableList[idx] ? <CheckOutlined /> : <EditOutlined />}
-                    />
-                  </div>
+                    }}
+                    icon={
+                      tokenEditableList[idx] ? (
+                        <CheckOutlined />
+                      ) : (
+                        <EditOutlined />
+                      )
+                    }
+                  />
                 </div>
-              </List.Item>
-            ))
-          }
-        </List> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-      }
+              </div>
+            </List.Item>
+          ))}
+        </List>
+      ) : (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      )}
     </main>
   );
 }

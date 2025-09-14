@@ -13,9 +13,9 @@ export async function listTeamRepos(
   org: string,
   team: string,
 ): Promise<Repo[]> {
-  console.log("Going to use: " + await getGitHubToken());
+  console.log("Going to use: " + (await getGitHubToken()));
   const octo = await initGitHubClient(globalThis.useEnterpriseServer);
-  console.log("Using: " + await getGitHubToken());
+  console.log("Using: " + (await getGitHubToken()));
   // Fetch response data.
   const { data: reposData } = await octo.rest.teams.listReposInOrg({
     org: org,
@@ -33,7 +33,3 @@ export async function listTeamRepos(
   });
   return repos;
 }
-
-
-
-

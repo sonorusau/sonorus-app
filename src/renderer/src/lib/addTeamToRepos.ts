@@ -9,17 +9,17 @@ export async function addTeamToRepos(
   permission: string,
   repos: Repo[],
 ): Promise<boolean> {
-  console.log("Going to use: " + await getGitHubToken());
+  console.log("Going to use: " + (await getGitHubToken()));
   const octo = await initGitHubClient(globalThis.useEnterpriseServer);
-  console.log("Using: " + await getGitHubToken());
-  for (var repo of repos) {
+  console.log("Using: " + (await getGitHubToken()));
+  for (const repo of repos) {
     const data = await octo.rest.teams.addOrUpdateRepoPermissionsInOrg({
       org: org,
       team_slug: teamSlug,
       owner: repo.owner,
       repo: repo.name,
-      permission: permission
-    })
+      permission: permission,
+    });
   }
   return true;
 }

@@ -10,7 +10,7 @@ import path, { basename } from "node:path";
  * @returns
  */
 export function selectFilesUnderDirectories(): CommitFile[] {
-  const commitFiles: CommitFile[] = []
+  const commitFiles: CommitFile[] = [];
   const data: string[] | undefined = dialog.showOpenDialogSync({
     properties: ["openDirectory", "multiSelections"],
   });
@@ -22,15 +22,15 @@ export function selectFilesUnderDirectories(): CommitFile[] {
     const dirName: string = path.basename(dirFullPath);
     console.log("Selected dir name: " + dirName);
     const fileFullPaths: string[] = walkSync(dirFullPath, []);
-    for (var fileFullPath of fileFullPaths) {
+    for (const fileFullPath of fileFullPaths) {
       const fileName = path.basename(fileFullPath);
-      if(fileName === ".DS_Store") continue;
+      if (fileName === ".DS_Store") continue;
       const pathInRepo = fileFullPath.substring(fileFullPath.indexOf(dirName));
       console.log("Path in repo: " + pathInRepo);
       const commitFile: CommitFile = {
         fullPath: fileFullPath,
         pathInRepo: pathInRepo,
-      }
+      };
       commitFiles.push(commitFile);
     }
   }
@@ -39,15 +39,14 @@ export function selectFilesUnderDirectories(): CommitFile[] {
 
 // List all files in a directory in Node.js recursively in a synchronous fashion
 // https://gist.github.com/kethinov/6658166
-var walkSync = function (dir: string, filePaths: string[]) {
-  var fs = fs || require('fs'),
+const walkSync = function (dir: string, filePaths: string[]): string[] {
+  const fs = require("fs"),
     files = fs.readdirSync(dir);
   filePaths = filePaths || [];
   files.forEach(function (file) {
     if (fs.statSync(path.join(dir, file)).isDirectory()) {
       filePaths = walkSync(path.join(dir, file), filePaths);
-    }
-    else {
+    } else {
       filePaths.push(path.join(dir, file));
     }
   });
