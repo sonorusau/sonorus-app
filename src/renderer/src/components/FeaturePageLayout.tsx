@@ -22,7 +22,7 @@ function FeaturePageLayout(): JSX.Element {
         </div>
 
         {/* Main content */}
-        <main className="flex-1 flex justify-center px-8 pb-8 overflow-auto">
+        <main className="flex-1 flex justify-center px-8 pb-16 overflow-auto">
           <div className="w-full max-w-7xl">
             <Outlet />
           </div>

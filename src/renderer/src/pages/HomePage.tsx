@@ -41,12 +41,12 @@ function HomePage(): JSX.Element {
 
   return (
     <BackgroundLayout>
-      <div className="flex flex-col items-center justify-center h-full px-8">
+      <div className="flex flex-col items-center justify-center h-full px-8 pb-16">
         {/* Logo section */}
         <div className="mb-12 text-center">
           <div className="flex items-center justify-center mb-8">
             <div
-              className="bg-white/20 backdrop-blur-xl rounded-2xl p-6 border"
+              className="bg-white/5 backdrop-blur-md rounded-2xl p-6 border"
               style={{
                 borderColor: "#ACACE6",
                 boxShadow:
@@ -67,7 +67,7 @@ function HomePage(): JSX.Element {
           {buttons.map((buttonContent, idx) => (
             <div
               key={idx}
-              className="group relative bg-white/15 backdrop-blur-xl rounded-2xl p-6 border cursor-pointer"
+              className="group relative bg-white/3 backdrop-blur-md rounded-2xl p-6 border cursor-pointer"
               onClick={() => handlePageBtnClick(buttonContent.path)}
               style={{
                 borderColor: "#8C7DD1",
@@ -110,7 +110,7 @@ function HomePage(): JSX.Element {
         {/* Footer message */}
         <div className="max-w-2xl mx-auto">
           <div
-            className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border"
+            className="bg-white/2 backdrop-blur-md rounded-xl p-6 border"
             style={{
               borderColor: "#ACACE6",
               boxShadow:

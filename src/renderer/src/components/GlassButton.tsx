@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 interface GlassButtonProps {
   children: ReactNode;
   onClick?: () => void;
-  variant?: "primary" | "secondary" | "danger";
+  variant?: "primary" | "secondary" | "danger" | "success";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   className?: string;
@@ -27,18 +27,23 @@ function GlassButton({
 
   const variantStyles = {
     primary: {
-      background: "rgba(140, 125, 209, 0.2)",
+      background: "rgba(140, 125, 209, 0.1)",
       borderColor: "#8C7DD1",
       color: "white"
     },
     secondary: {
-      background: "rgba(255, 255, 255, 0.1)",
-      borderColor: "#ACACE6", 
+      background: "var(--glass-bg)",
+      borderColor: "var(--glass-border)", 
       color: "white"
     },
     danger: {
-      background: "rgba(239, 68, 68, 0.2)",
+      background: "rgba(239, 68, 68, 0.1)",
       borderColor: "#ef4444",
+      color: "white"
+    },
+    success: {
+      background: "rgba(16, 185, 129, 0.1)",
+      borderColor: "#10b981",
       color: "white"
     }
   };
@@ -46,9 +51,9 @@ function GlassButton({
   return (
     <button
       className={`
-        backdrop-blur-xl rounded-xl border font-medium
-        transition-all duration-300 
-        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-95'} 
+        backdrop-blur-sm rounded-xl border font-medium
+        transition-all duration-300 hover:backdrop-blur-md
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-95 hover:scale-105'} 
         ${sizeClasses[size]} 
         ${className}
         flex items-center justify-center gap-2
@@ -59,7 +64,7 @@ function GlassButton({
         background: variantStyles[variant].background,
         borderColor: variantStyles[variant].borderColor,
         color: variantStyles[variant].color,
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 255, 255, 0.05) inset'
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12), 0 0 30px rgba(255, 255, 255, 0.03) inset, 0 2px 16px rgba(140, 125, 209, 0.08)'
       }}
     >
       {icon && <span>{icon}</span>}

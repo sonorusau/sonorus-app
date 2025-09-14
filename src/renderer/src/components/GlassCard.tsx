@@ -21,12 +21,12 @@ function GlassCard({
 
   return (
     <div
-      className={`bg-white/15 backdrop-blur-xl rounded-2xl border ${onClick ? 'cursor-pointer' : ''} ${paddingClasses[padding]} ${className}`}
+      className={`backdrop-blur-md rounded-2xl border transition-all duration-300 ${onClick ? 'cursor-pointer hover:scale-[1.02]' : ''} ${paddingClasses[padding]} ${className}`}
       onClick={onClick}
       style={{
-        borderColor: "#8C7DD1",
-        boxShadow:
-          "0 4px 16px rgba(0, 0, 0, 0.2), 0 0 20px rgba(255, 255, 255, 0.05) inset",
+        background: "var(--glass-bg)",
+        borderColor: "var(--glass-border)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1), 0 0 40px rgba(255, 255, 255, 0.02) inset, 0 2px 16px rgba(140, 125, 209, 0.1)",
       }}
     >
       {children}

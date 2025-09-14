@@ -345,6 +345,7 @@ function PatientSelect(): JSX.Element {
             </div>
           )}
         </GlassCard>
+        <div className="mb-16"></div>
       </div>
     </div>
   );

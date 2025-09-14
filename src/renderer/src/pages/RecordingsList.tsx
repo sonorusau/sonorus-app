@@ -218,7 +218,7 @@ function RecordingsList(): JSX.Element {
               size="large"
               style={{ 
                 background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid #ACACE6"
+                border: "none"
               }}
             >
               <Option value="all">All Statuses</Option>
@@ -237,7 +237,7 @@ function RecordingsList(): JSX.Element {
               size="large"
               style={{ 
                 background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid #ACACE6"
+                border: "none"
               }}
             >
               <Option value="all">All Areas</Option>
@@ -257,7 +257,7 @@ function RecordingsList(): JSX.Element {
               size="large"
               style={{ 
                 background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid #ACACE6"
+                border: "none"
               }}
             />
           </div>
@@ -284,7 +284,7 @@ function RecordingsList(): JSX.Element {
       </GlassCard>
 
       {/* Recordings Grid */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 mb-16">
         {loading ? (
           <GlassCard padding="lg">
             <div className="text-center text-white/60 py-8">

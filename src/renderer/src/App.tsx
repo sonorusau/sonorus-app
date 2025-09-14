@@ -2,7 +2,7 @@ import { HashRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import AddFiles from "./pages/AddFiles";
 import GithubAccessTokenPage from "./pages/GithubAccessTokenPage";
-import ListTeamReposPage from "./pages/ListTeamReposPage";
+import QuickScanPage from "./pages/QuickScanPage";
 import PairDevice from "./pages/PairDevice";
 import RecordingsList from "./pages/RecordingsList";
 import Settings from "./pages/Settings";
@@ -34,8 +34,8 @@ function App(): JSX.Element {
                 <Route path="/blank-page" element={<GithubAccessTokenPage />} />
                 <Route path="/patients" element={<AddFiles />} />
                 <Route path="/add-files" element={<AddFiles />} />
-                <Route path="/list-team-repos" element={<ListTeamReposPage />} />
-                <Route path="/quick-scan" element={<ListTeamReposPage />} />
+                <Route path="/list-team-repos" element={<QuickScanPage />} />
+                <Route path="/quick-scan" element={<QuickScanPage />} />
                 <Route path="/pair-device" element={<PairDevice />} />
                 <Route path="/recordings" element={<RecordingsList />} />
                 <Route path="/settings" element={<Settings />} />

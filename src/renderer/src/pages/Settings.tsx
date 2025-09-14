@@ -501,7 +501,7 @@ function Settings(): JSX.Element {
         </GlassCard>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-16">
           <GlassButton
             variant="secondary"
             onClick={resetToDefaults}
