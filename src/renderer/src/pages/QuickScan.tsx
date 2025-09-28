@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Button, Progress, Steps } from "antd";
+import { Button, Progress, Steps, Alert } from "antd";
 import {
   PlayCircleOutlined,
   StopOutlined,
-  HeartOutlined,
 } from "@ant-design/icons";
 import GlassCard from "../components/GlassCard";
+import AudioWaveform from "../components/AudioWaveform";
+import useMicrophoneAnalyser from "../hooks/useMicrophoneAnalyser";
 import Title from "antd/es/typography/Title";
 import "./QuickScan.css";
 
@@ -16,6 +17,13 @@ function QuickScanPage(): JSX.Element {
   const [recordingTime, setRecordingTime] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [analysisComplete, setAnalysisComplete] = useState(false);
+  const {
+    analyser,
+    start: startMicrophone,
+    stop: stopMicrophone,
+    error: audioError,
+    clearError,
+  } = useMicrophoneAnalyser();
 
   const steps = [
     {
@@ -52,13 +60,24 @@ function QuickScanPage(): JSX.Element {
     return () => clearInterval(interval);
   }, [isRecording]);
 
-  const handleStartRecording = (): void => {
-    setIsRecording(true);
-    setCurrentStep(1);
-    setRecordingTime(0);
+  const handleStartRecording = async (): Promise<void> => {
+    if (isRecording) {
+      return;
+    }
+
+    try {
+      clearError();
+      await startMicrophone();
+      setIsRecording(true);
+      setCurrentStep(1);
+      setRecordingTime(0);
+    } catch (microphoneError) {
+      console.error("Microphone start failed", microphoneError);
+    }
   };
 
   const handleStopRecording = (): void => {
+    stopMicrophone();
     setIsRecording(false);
     setCurrentStep(2);
     // Simulate analysis
@@ -69,6 +88,7 @@ function QuickScanPage(): JSX.Element {
   };
 
   const handleReset = (): void => {
+    stopMicrophone();
     setIsRecording(false);
     setRecordingTime(0);
     setCurrentStep(0);
@@ -97,20 +117,20 @@ function QuickScanPage(): JSX.Element {
         {/* Left Panel - Recording Controls */}
         <div className="flex flex-col">
           <GlassCard padding="lg" className="flex-1">
+            {audioError && (
+              <Alert
+                type="error"
+                showIcon
+                closable
+                onClose={clearError}
+                message="Microphone access required"
+                description={audioError}
+                className="mb-4 text-left"
+              />
+            )}
             <div className="text-center mb-8">
               <div className="recording-visualizer mb-6">
-                <div className={`heart-icon ${isRecording ? "beating" : ""}`}>
-                  <HeartOutlined
-                    style={{ fontSize: "4rem", color: "#8C7DD1" }}
-                  />
-                </div>
-                {isRecording && (
-                  <div className="sound-waves">
-                    <div className="wave wave1"></div>
-                    <div className="wave wave2"></div>
-                    <div className="wave wave3"></div>
-                  </div>
-                )}
+                <AudioWaveform isActive={isRecording} analyser={analyser} />
               </div>
 
               <div className="recording-timer mb-6">

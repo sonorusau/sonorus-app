@@ -13,78 +13,102 @@
   min-height: 200px;
 }
 
-.heart-icon {
-  transition: all 0.3s ease;
+.audio-waveform {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(520px, 100%);
+  height: 180px;
+  padding: 1.5rem 1.75rem;
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(140, 125, 209, 0.12), rgba(71, 64, 132, 0.18));
+  box-shadow: inset 0 0 0 1px rgba(172, 172, 230, 0.24);
+  overflow: hidden;
+  transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
 }
 
-.heart-icon.beating {
-  animation: heartbeat 1.2s infinite;
-}
-
-@keyframes heartbeat {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.1); }
-  50% { transform: scale(1); }
-  75% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.sound-waves {
+.audio-waveform::before {
+  content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 200px;
-  height: 200px;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(172, 172, 230, 0.1) 0,
+    rgba(172, 172, 230, 0.1) 1px,
+    transparent 1px,
+    transparent 32px
+  );
+  opacity: 0.4;
   pointer-events: none;
 }
 
-.wave {
+.audio-waveform::after {
+  content: "";
   position: absolute;
-  border: 2px solid #8C7DD1;
-  border-radius: 50%;
-  opacity: 0;
-  animation: wave-animation 2s infinite;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(31, 30, 60, 0.0) 0%, rgba(140, 125, 209, 0.18) 100%);
+  opacity: 0.0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
-.wave1 {
-  width: 80px;
-  height: 80px;
-  top: 50%;
-  left: 50%;
-  margin-top: -40px;
-  margin-left: -40px;
-  animation-delay: 0s;
+.audio-waveform--active {
+  background: linear-gradient(145deg, rgba(151, 140, 226, 0.26), rgba(87, 78, 162, 0.35));
+  box-shadow: inset 0 0 0 1px rgba(172, 172, 230, 0.45), 0 22px 40px rgba(103, 94, 180, 0.35);
+  transform: translateY(-2px);
+  opacity: 1;
 }
 
-.wave2 {
-  width: 120px;
-  height: 120px;
-  top: 50%;
-  left: 50%;
-  margin-top: -60px;
-  margin-left: -60px;
-  animation-delay: 0.5s;
+.audio-waveform--inactive {
+  opacity: 0.68;
 }
 
-.wave3 {
-  width: 160px;
-  height: 160px;
-  top: 50%;
-  left: 50%;
-  margin-top: -80px;
-  margin-left: -80px;
-  animation-delay: 1s;
+.audio-waveform--active::after {
+  opacity: 0.45;
 }
 
-@keyframes wave-animation {
-  0% {
-    opacity: 1;
-    transform: scale(0.5);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.2);
+.audio-waveform__svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.audio-waveform__fill {
+  transition: opacity 0.3s ease;
+  filter: blur(6px);
+  opacity: 0.65;
+}
+
+.audio-waveform--inactive .audio-waveform__fill {
+  opacity: 0.3;
+}
+
+.audio-waveform__stroke {
+  fill: none;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 18px rgba(140, 125, 209, 0.35));
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.audio-waveform--inactive .audio-waveform__stroke {
+  opacity: 0.6;
+  filter: drop-shadow(0 0 8px rgba(140, 125, 209, 0.25));
+}
+
+.audio-waveform__baseline {
+  stroke: rgba(172, 172, 230, 0.28);
+  stroke-width: 0.6;
+  stroke-dasharray: 4 6;
+}
+
+@media (max-width: 768px) {
+  .audio-waveform {
+    height: 150px;
+    padding: 1.15rem 1rem;
   }
 }
 
@@ -226,9 +250,5 @@
   .recording-visualizer {
     min-height: 150px;
   }
-  
-  .sound-waves {
-    width: 150px;
-    height: 150px;
-  }
 }
+
