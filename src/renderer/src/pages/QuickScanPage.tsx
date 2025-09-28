@@ -215,7 +215,7 @@ function QuickScanPage(): JSX.Element {
     // Find the first available type
     const existingTypes = skinBarriers.map(barrier => barrier.type);
     const availableTypes = ['stickers', 'scars', 'fat'].filter(type => !existingTypes.includes(type as any));
-    
+
     if (availableTypes.length === 0) {
       return; // All types already exist
     }
@@ -250,8 +250,8 @@ function QuickScanPage(): JSX.Element {
       }
     }
 
-    setSkinBarriers(prev => prev.map(barrier => 
-      barrier.id === id 
+    setSkinBarriers(prev => prev.map(barrier =>
+      barrier.id === id
         ? { ...barrier, [field]: value }
         : barrier
     ));
@@ -262,7 +262,7 @@ function QuickScanPage(): JSX.Element {
     const handleScroll = () => {
       const sections = [0, 1, 2];
       const scrollPosition = window.scrollY + window.innerHeight / 2;
-      
+
       for (let i = sections.length - 1; i >= 0; i--) {
         const section = document.getElementById(`section-${i}`);
         if (section && section.offsetTop <= scrollPosition) {
@@ -306,7 +306,7 @@ function QuickScanPage(): JSX.Element {
                         <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                           {index + 1}
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <label className="block text-white/80 text-sm font-medium mb-2">
                             Barrier Type
@@ -332,7 +332,7 @@ function QuickScanPage(): JSX.Element {
                               ))}
                           </Select>
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <label className="block text-white/80 text-sm font-medium mb-2">
                             Severity Level
@@ -361,7 +361,7 @@ function QuickScanPage(): JSX.Element {
                           </GlassButton>
                         </div>
                       </div>
-                      
+
                       <div className="mt-3 text-center">
                         <span className="text-yellow-400 text-sm">
                           ⚠️ {barrier.severity.charAt(0).toUpperCase() + barrier.severity.slice(1)} {barrier.type} - affects recording quality
@@ -581,7 +581,7 @@ function QuickScanPage(): JSX.Element {
             {/* Legend and Selection Info */}
             <div className="space-y-3">
               <div className="text-white font-medium text-sm mb-2">Heart Valve Areas:</div>
-              
+
               {/* Active Skin Barriers Status */}
               {skinBarriers.length > 0 && (
                 <div className="p-3 mb-3 rounded-lg bg-yellow-500/20 border border-yellow-500/40 max-h-32 flex flex-col">
@@ -659,7 +659,7 @@ function QuickScanPage(): JSX.Element {
               onClick={() => scrollToSection(2)}
               disabled={!selectedHeartArea}
             >
-              {selectedHeartArea 
+              {selectedHeartArea
                 ? `Next: Record ${heartAreas.find(area => area.key === selectedHeartArea)?.label}`
                 : 'Select Heart Area First'}
             </GlassButton>
@@ -675,7 +675,7 @@ function QuickScanPage(): JSX.Element {
               Record Heart Sounds
             </Title>
             <p className="text-white/70 text-lg mt-2">
-              {selectedHeartArea 
+              {selectedHeartArea
                 ? `Recording ${heartAreas.find(area => area.key === selectedHeartArea)?.label} area`
                 : "Ready to record when you select a heart area"}
             </p>
@@ -776,7 +776,7 @@ function QuickScanPage(): JSX.Element {
                       Analysis Complete
                     </h3>
                   </div>
-                  
+
                   {/* Display Active Skin Barriers in Results */}
                   {skinBarriers.length > 0 && (
                     <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
@@ -792,7 +792,7 @@ function QuickScanPage(): JSX.Element {
                       </div>
                     </div>
                   )}
-                  
+
                   <p className="text-green-400 text-lg">
                     ✓ {Math.random() > 0.7 ? "Minor irregularities detected - recommend follow-up" : "Normal heart sounds detected"}
                   </p>
