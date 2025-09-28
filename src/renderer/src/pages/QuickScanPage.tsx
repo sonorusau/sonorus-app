@@ -5,7 +5,9 @@ import {
   StopOutlined,
   HeartOutlined,
   WifiOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
+  PlusOutlined,
+  DeleteOutlined
 } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import GlassCard from "../components/GlassCard";
@@ -25,8 +27,9 @@ interface HeartArea {
 }
 
 interface SkinBarrier {
-  type: 'stickers' | 'scars' | 'fat' | '';
-  severity: 'mild' | 'moderate' | 'severe' | '';
+  id: string;
+  type: 'stickers' | 'scars' | 'fat';
+  severity: 'mild' | 'moderate' | 'severe';
 }
 
 const heartAreas: HeartArea[] = [
@@ -71,7 +74,7 @@ function QuickScanPage(): JSX.Element {
     mitral: false
   });
   const [recordingResults, setRecordingResults] = useState<Record<string, any>>({});
-  const [globalSkinBarrier, setGlobalSkinBarrier] = useState<SkinBarrier>({ type: '', severity: '' });
+  const [skinBarriers, setSkinBarriers] = useState<SkinBarrier[]>([]);
   const [currentSection, setCurrentSection] = useState(0);
 
   // Get patient ID from navigation state if coming from patient select
@@ -143,7 +146,7 @@ function QuickScanPage(): JSX.Element {
         rhythm: Math.random() > 0.8 ? "Irregular" : "Regular",
         quality: Math.random() > 0.7 ? "Poor" : "Good",
         timestamp: new Date().toISOString(),
-        skinBarrier: globalSkinBarrier
+        skinBarriers: skinBarriers
       }
     }));
 
@@ -177,7 +180,7 @@ function QuickScanPage(): JSX.Element {
       mitral: false
     });
     setRecordingResults({});
-    setGlobalSkinBarrier({ type: '', severity: '' });
+    setSkinBarriers([]);
   };
 
   const canStartRecording = selectedHeartArea;
@@ -201,6 +204,57 @@ function QuickScanPage(): JSX.Element {
       section.scrollIntoView({ behavior: 'smooth' });
       setCurrentSection(sectionIndex);
     }
+  };
+
+  const addSkinBarrier = (): void => {
+    // Check if we already have 3 barriers (max: stickers, scars, fat)
+    if (skinBarriers.length >= 3) {
+      return;
+    }
+
+    // Find the first available type
+    const existingTypes = skinBarriers.map(barrier => barrier.type);
+    const availableTypes = ['stickers', 'scars', 'fat'].filter(type => !existingTypes.includes(type as any));
+    
+    if (availableTypes.length === 0) {
+      return; // All types already exist
+    }
+
+    const newBarrier: SkinBarrier = {
+      id: `barrier-${Date.now()}`,
+      type: availableTypes[0] as 'stickers' | 'scars' | 'fat',
+      severity: 'mild'
+    };
+    setSkinBarriers(prev => [...prev, newBarrier]);
+  };
+
+  const getAvailableTypes = (currentBarrierId?: string): ('stickers' | 'scars' | 'fat')[] => {
+    const existingTypes = skinBarriers
+      .filter(barrier => barrier.id !== currentBarrierId)
+      .map(barrier => barrier.type);
+    return ['stickers', 'scars', 'fat'].filter(type => !existingTypes.includes(type));
+  };
+
+  const removeSkinBarrier = (id: string): void => {
+    setSkinBarriers(prev => prev.filter(barrier => barrier.id !== id));
+  };
+
+  const updateSkinBarrier = (id: string, field: 'type' | 'severity', value: string): void => {
+    if (field === 'type') {
+      // Check if this type is already used by another barrier
+      const existingBarrierWithType = skinBarriers.find(
+        barrier => barrier.id !== id && barrier.type === value
+      );
+      if (existingBarrierWithType) {
+        return; // Don't allow duplicate types
+      }
+    }
+
+    setSkinBarriers(prev => prev.map(barrier => 
+      barrier.id === id 
+        ? { ...barrier, [field]: value }
+        : barrier
+    ));
   };
 
   // Detect current section on scroll
@@ -227,79 +281,123 @@ function QuickScanPage(): JSX.Element {
 
       {/* Section 1: Skin Barriers Configuration */}
       <section id="section-0" className="snap-section section-1">
-        <GlassCard padding="lg" className="w-full max-w-2xl">
-          <div className="text-center mb-6">
+        <GlassCard padding="lg" className="w-full max-w-3xl max-h-[80vh] flex flex-col">
+          <div className="text-center mb-4 flex-shrink-0">
             <Title level={2} style={{ color: 'white', margin: 0 }}>
               Skin Barriers Configuration
             </Title>
             <p className="text-white/70 text-lg mt-2">
-              Configure any skin barriers that may affect recording quality across all heart valve areas
+              Configure skin barriers that may affect recording quality across all heart valve areas
             </p>
           </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-6">
-            <div className="flex-1">
-              <label className="block text-white/80 text-sm font-medium mb-2">
-                Barrier Type
-              </label>
-              <Select
-                value={globalSkinBarrier.type || undefined}
-                placeholder="Select type"
-                onChange={(value) => setGlobalSkinBarrier(prev => ({
-                  ...prev,
-                  type: value
-                }))}
-                className="w-full"
-                size="large"
-                style={{ 
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                }}
-              >
-                <Option value="stickers">Stickers</Option>
-                <Option value="scars">Scars</Option>
-                <Option value="fat">Fat</Option>
-              </Select>
-            </div>
-            
-            <div className="flex-1">
-              <label className="block text-white/80 text-sm font-medium mb-2">
-                Severity Level
-              </label>
-              <Select
-                value={globalSkinBarrier.severity || undefined}
-                placeholder="Select severity"
-                onChange={(value) => setGlobalSkinBarrier(prev => ({
-                  ...prev,
-                  severity: value
-                }))}
-                className="w-full"
-                size="large"
-                disabled={!globalSkinBarrier.type}
-                style={{ 
-                  backgroundColor: 'rgba(255,255,255,0.1)',
-                }}
-              >
-                <Option value="mild">Mild</Option>
-                <Option value="moderate">Moderate</Option>
-                <Option value="severe">Severe</Option>
-              </Select>
-            </div>
-          </div>
-          
-          {globalSkinBarrier.type && globalSkinBarrier.severity && (
-            <div className="mb-6 text-center">
-              <div className="inline-block p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/40">
-                <span className="text-yellow-400 font-medium">
-                  ⚠️ {globalSkinBarrier.severity.charAt(0).toUpperCase() + globalSkinBarrier.severity.slice(1)} {globalSkinBarrier.type} detected
-                </span>
-                <div className="text-yellow-300/80 text-sm mt-1">
-                  Will affect recording quality for all areas
+
+          {/* Scrollable Skin Barriers Container */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Existing Skin Barriers */}
+            {skinBarriers.length > 0 && (
+              <div className="mb-4 flex-1 min-h-0">
+                <h3 className="text-white font-medium text-center mb-4 flex-shrink-0">
+                  Active Skin Barriers ({skinBarriers.length})
+                </h3>
+                <div className="max-h-80 space-y-3 px-2 pr-3 skin-barriers-scroll">
+                  {skinBarriers.map((barrier, index) => (
+                    <div key={barrier.id} className="p-4 rounded-lg bg-white/10 border border-white/20 flex-shrink-0">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                          {index + 1}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-white/80 text-sm font-medium mb-2">
+                            Barrier Type
+                          </label>
+                          <Select
+                            value={barrier.type}
+                            onChange={(value) => updateSkinBarrier(barrier.id, 'type', value)}
+                            className="w-full"
+                            size="large"
+                            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                          >
+                            {/* Current type is always available */}
+                            <Option value={barrier.type}>
+                              {barrier.type.charAt(0).toUpperCase() + barrier.type.slice(1)}
+                            </Option>
+                            {/* Show other available types */}
+                            {getAvailableTypes(barrier.id)
+                              .filter(type => type !== barrier.type)
+                              .map(type => (
+                                <Option key={type} value={type}>
+                                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                                </Option>
+                              ))}
+                          </Select>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-white/80 text-sm font-medium mb-2">
+                            Severity Level
+                          </label>
+                          <Select
+                            value={barrier.severity}
+                            onChange={(value) => updateSkinBarrier(barrier.id, 'severity', value)}
+                            className="w-full"
+                            size="large"
+                            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                          >
+                            <Option value="mild">Mild</Option>
+                            <Option value="moderate">Moderate</Option>
+                            <Option value="severe">Severe</Option>
+                          </Select>
+                        </div>
+
+                        <div className="flex-shrink-0">
+                          <GlassButton
+                            variant="danger"
+                            size="sm"
+                            icon={<DeleteOutlined />}
+                            onClick={() => removeSkinBarrier(barrier.id)}
+                          >
+                            Remove
+                          </GlassButton>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 text-center">
+                        <span className="text-yellow-400 text-sm">
+                          ⚠️ {barrier.severity.charAt(0).toUpperCase() + barrier.severity.slice(1)} {barrier.type} - affects recording quality
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="text-center">
+            {/* Add New Barrier */}
+            <div className="text-center flex-shrink-0 mb-6">
+              <GlassButton
+                variant="primary"
+                size="lg"
+                icon={<PlusOutlined />}
+                onClick={addSkinBarrier}
+                disabled={skinBarriers.length >= 3}
+              >
+                Add Skin Barrier
+              </GlassButton>
+              {skinBarriers.length === 0 && (
+                <p className="text-white/60 text-sm mt-2">
+                  No skin barriers configured. Add barriers that may affect recording quality.
+                </p>
+              )}
+              {skinBarriers.length >= 3 && (
+                <p className="text-white/60 text-sm mt-2">
+                  Maximum barriers reached. You have all available barrier types (stickers, scars, fat).
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="text-center mt-4">
             <GlassButton
               variant="primary"
               size="lg"
@@ -484,13 +582,20 @@ function QuickScanPage(): JSX.Element {
             <div className="space-y-3">
               <div className="text-white font-medium text-sm mb-2">Heart Valve Areas:</div>
               
-              {/* Global Skin Barrier Status */}
-              {globalSkinBarrier.type && globalSkinBarrier.severity && (
-                <div className="p-2 mb-3 rounded-lg bg-yellow-500/20 border border-yellow-500/40">
-                  <div className="text-yellow-400 text-xs font-medium">
-                    Active Skin Barrier: {globalSkinBarrier.severity} {globalSkinBarrier.type}
+              {/* Active Skin Barriers Status */}
+              {skinBarriers.length > 0 && (
+                <div className="p-3 mb-3 rounded-lg bg-yellow-500/20 border border-yellow-500/40 max-h-32 flex flex-col">
+                  <div className="text-yellow-400 text-xs font-medium mb-2 flex-shrink-0">
+                    Active Skin Barriers ({skinBarriers.length}):
                   </div>
-                  <div className="text-yellow-300/80 text-xs">
+                  <div className="space-y-1 overflow-y-auto flex-1 skin-barriers-scroll pr-2">
+                    {skinBarriers.map((barrier, index) => (
+                      <div key={barrier.id} className="text-yellow-300/80 text-xs flex-shrink-0">
+                        {index + 1}. {barrier.severity} {barrier.type}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-yellow-300/60 text-xs mt-2 flex-shrink-0">
                     Applied to all heart valve recordings
                   </div>
                 </div>
@@ -671,6 +776,23 @@ function QuickScanPage(): JSX.Element {
                       Analysis Complete
                     </h3>
                   </div>
+                  
+                  {/* Display Active Skin Barriers in Results */}
+                  {skinBarriers.length > 0 && (
+                    <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                      <div className="text-yellow-400 text-sm font-medium mb-2">
+                        Skin Barriers Applied During Recording:
+                      </div>
+                      <div className="space-y-1">
+                        {skinBarriers.map((barrier, index) => (
+                          <div key={barrier.id} className="text-yellow-300/80 text-sm">
+                            {index + 1}. {barrier.severity} {barrier.type}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
                   <p className="text-green-400 text-lg">
                     ✓ {Math.random() > 0.7 ? "Minor irregularities detected - recommend follow-up" : "Normal heart sounds detected"}
                   </p>
