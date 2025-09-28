@@ -24,6 +24,11 @@ interface HeartArea {
   icon: string;
 }
 
+interface SkinBarrier {
+  type: 'stickers' | 'scars' | 'fat' | '';
+  severity: 'mild' | 'moderate' | 'severe' | '';
+}
+
 const heartAreas: HeartArea[] = [
   {
     key: "aortic",
@@ -66,6 +71,8 @@ function QuickScanPage(): JSX.Element {
     mitral: false
   });
   const [recordingResults, setRecordingResults] = useState<Record<string, any>>({});
+  const [globalSkinBarrier, setGlobalSkinBarrier] = useState<SkinBarrier>({ type: '', severity: '' });
+  const [currentSection, setCurrentSection] = useState(0);
 
   // Get patient ID from navigation state if coming from patient select
   useEffect(() => {
@@ -127,7 +134,7 @@ function QuickScanPage(): JSX.Element {
 
     setCompletedRecordings(newCompletedRecordings);
 
-    // Store mock recording result
+    // Store mock recording result with skin barrier data
     setRecordingResults(prev => ({
       ...prev,
       [currentArea]: {
@@ -135,7 +142,8 @@ function QuickScanPage(): JSX.Element {
         heartRate: Math.floor(Math.random() * 20) + 60, // 60-80 BPM
         rhythm: Math.random() > 0.8 ? "Irregular" : "Regular",
         quality: Math.random() > 0.7 ? "Poor" : "Good",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        skinBarrier: globalSkinBarrier
       }
     }));
 
@@ -169,6 +177,7 @@ function QuickScanPage(): JSX.Element {
       mitral: false
     });
     setRecordingResults({});
+    setGlobalSkinBarrier({ type: '', severity: '' });
   };
 
   const canStartRecording = selectedHeartArea;
@@ -186,70 +195,166 @@ function QuickScanPage(): JSX.Element {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const scrollToSection = (sectionIndex: number): void => {
+    const section = document.getElementById(`section-${sectionIndex}`);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+      setCurrentSection(sectionIndex);
+    }
+  };
+
+  // Detect current section on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = [0, 1, 2];
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+      
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = document.getElementById(`section-${i}`);
+        if (section && section.offsetTop <= scrollPosition) {
+          setCurrentSection(i);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <div className="quick-scan-container">
-      <div className="mb-6">
-        <Title level={2} style={{ color: 'white', margin: 0 }}>
-          {patientId ? "Patient Recording" : "Quick Heart Sound Scan"}
-        </Title>
-        <p className="text-white/70 text-lg mt-2">
-          {patientId
-            ? "Record heart sounds and save to patient record"
-            : "Record heart sounds for immediate analysis without saving to patient records"
-          }
-        </p>
-      </div>
 
-      {/* Recording Progress Overview */}
-      <GlassCard padding="md" className="mb-4">
-        <div className="text-center mb-6">
-          <h3 className="text-white font-medium text-xl mb-2">Complete Heart Sound Analysis</h3>
-          <p className="text-white/70">Record all 4 heart valve areas for comprehensive analysis</p>
+      {/* Section 1: Skin Barriers Configuration */}
+      <section id="section-0" className="snap-section section-1">
+        <GlassCard padding="lg" className="w-full max-w-2xl">
+          <div className="text-center mb-6">
+            <Title level={2} style={{ color: 'white', margin: 0 }}>
+              Skin Barriers Configuration
+            </Title>
+            <p className="text-white/70 text-lg mt-2">
+              Configure any skin barriers that may affect recording quality across all heart valve areas
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-6">
+            <div className="flex-1">
+              <label className="block text-white/80 text-sm font-medium mb-2">
+                Barrier Type
+              </label>
+              <Select
+                value={globalSkinBarrier.type || undefined}
+                placeholder="Select type"
+                onChange={(value) => setGlobalSkinBarrier(prev => ({
+                  ...prev,
+                  type: value
+                }))}
+                className="w-full"
+                size="large"
+                style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                }}
+              >
+                <Option value="stickers">Stickers</Option>
+                <Option value="scars">Scars</Option>
+                <Option value="fat">Fat</Option>
+              </Select>
+            </div>
+            
+            <div className="flex-1">
+              <label className="block text-white/80 text-sm font-medium mb-2">
+                Severity Level
+              </label>
+              <Select
+                value={globalSkinBarrier.severity || undefined}
+                placeholder="Select severity"
+                onChange={(value) => setGlobalSkinBarrier(prev => ({
+                  ...prev,
+                  severity: value
+                }))}
+                className="w-full"
+                size="large"
+                disabled={!globalSkinBarrier.type}
+                style={{ 
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                }}
+              >
+                <Option value="mild">Mild</Option>
+                <Option value="moderate">Moderate</Option>
+                <Option value="severe">Severe</Option>
+              </Select>
+            </div>
+          </div>
+          
+          {globalSkinBarrier.type && globalSkinBarrier.severity && (
+            <div className="mb-6 text-center">
+              <div className="inline-block p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/40">
+                <span className="text-yellow-400 font-medium">
+                  ⚠️ {globalSkinBarrier.severity.charAt(0).toUpperCase() + globalSkinBarrier.severity.slice(1)} {globalSkinBarrier.type} detected
+                </span>
+                <div className="text-yellow-300/80 text-sm mt-1">
+                  Will affect recording quality for all areas
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center">
+            <GlassButton
+              variant="primary"
+              size="lg"
+              onClick={() => scrollToSection(1)}
+            >
+              Next: Choose Heart Location
+            </GlassButton>
+          </div>
+        </GlassCard>
+      </section>
+
+      {/* Section 2: Heart Location Selection */}
+      <section id="section-1" className="snap-section section-2">
+        <GlassCard padding="lg" className="w-full max-w-4xl">
+          <div className="text-center mb-6">
+            <Title level={2} style={{ color: 'white', margin: 0 }}>
+              Choose Heart Location
+            </Title>
+            <p className="text-white/70 text-lg mt-2">
+              Select the heart valve area to record
+            </p>
+          </div>
 
           {/* Progress indicator */}
-          <div className="mt-4 flex items-center justify-center gap-4">
-            <span className="text-white/60">Progress:</span>
-            <div className="flex gap-2">
-              {heartAreas.map((area) => (
-                <div
-                  key={area.key}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                    completedRecordings[area.key]
-                      ? 'bg-green-500 text-white'
-                      : selectedHeartArea === area.key && isRecording
-                      ? 'bg-yellow-500 text-black'
-                      : selectedHeartArea === area.key
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-white/20 text-white/60'
-                  }`}
-                >
-                  {completedRecordings[area.key] ? '✓' : area.key.charAt(0).toUpperCase()}
-                </div>
-              ))}
+          <div className="mb-6 text-center">
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-white/60">Progress:</span>
+              <div className="flex gap-2">
+                {heartAreas.map((area) => (
+                  <div
+                    key={area.key}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                      completedRecordings[area.key]
+                        ? 'bg-green-500 text-white'
+                        : selectedHeartArea === area.key
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-white/20 text-white/60'
+                    }`}
+                  >
+                    {completedRecordings[area.key] ? '✓' : area.key.charAt(0).toUpperCase()}
+                  </div>
+                ))}
+              </div>
+              <span className="text-white/60">
+                {Object.values(completedRecordings).filter(Boolean).length}/4 completed
+              </span>
             </div>
-            <span className="text-white/60">
-              {Object.values(completedRecordings).filter(Boolean).length}/4 completed
-            </span>
-          </div>
-        </div>
-
-      {/* Heart Area Selection - only show if not all completed and not currently analyzing */}
-      {!analysisComplete && currentStep === 0 && (
-        <div>
-          <div className="text-center mb-4">
-            <h4 className="text-white font-medium mb-2">
-              {Object.values(completedRecordings).every(Boolean)
-                ? "All recordings complete! Starting analysis..."
-                : "Select next heart area to record"}
-            </h4>
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-8 items-center justify-center">
+          <div className="flex flex-col lg:flex-row gap-6 items-center justify-center mb-6">
             {/* Interactive Chest Diagram */}
             <div className="relative">
               <svg
-                width="320"
-                height="450"
+                width="280"
+                height="380"
                 viewBox="0 0 320 450"
                 className="chest-diagram"
               >
@@ -376,12 +481,24 @@ function QuickScanPage(): JSX.Element {
             </div>
 
             {/* Legend and Selection Info */}
-            <div className="space-y-4">
-              <div className="text-white font-medium mb-4">Heart Valve Areas:</div>
+            <div className="space-y-3">
+              <div className="text-white font-medium text-sm mb-2">Heart Valve Areas:</div>
+              
+              {/* Global Skin Barrier Status */}
+              {globalSkinBarrier.type && globalSkinBarrier.severity && (
+                <div className="p-2 mb-3 rounded-lg bg-yellow-500/20 border border-yellow-500/40">
+                  <div className="text-yellow-400 text-xs font-medium">
+                    Active Skin Barrier: {globalSkinBarrier.severity} {globalSkinBarrier.type}
+                  </div>
+                  <div className="text-yellow-300/80 text-xs">
+                    Applied to all heart valve recordings
+                  </div>
+                </div>
+              )}
               {heartAreas.map((area) => (
                 <div
                   key={area.key}
-                  className={`p-3 rounded-lg border transition-all duration-300 ${
+                  className={`p-2 rounded-lg border transition-all duration-300 ${
                     completedRecordings[area.key]
                       ? 'bg-green-500/20 border-green-500/40'
                       : selectedHeartArea === area.key
@@ -392,7 +509,7 @@ function QuickScanPage(): JSX.Element {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
+                      className={`w-6 h-6 rounded-full flex items-center justify-center font-medium text-xs ${
                         completedRecordings[area.key]
                           ? 'bg-green-500 text-white'
                           : selectedHeartArea === area.key
@@ -421,239 +538,175 @@ function QuickScanPage(): JSX.Element {
               ))}
             </div>
           </div>
-        </div>
-      )}
-      </GlassCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full mb-16">
-        {/* Left Panel - Recording Controls */}
-        <div className="flex flex-col">
-          <GlassCard padding="lg" className="flex-1">
-            <div className="text-center mb-8">
-              <div className="recording-visualizer mb-6">
-                <div className={`heart-icon ${isRecording ? "beating" : ""}`}>
-                  <span style={{ fontSize: "4rem", display: "block" }}>
-                    🫀
-                  </span>
-                </div>
-                {isRecording && (
-                  <div className="sound-waves">
-                    <div className="wave wave1"></div>
-                    <div className="wave wave2"></div>
-                    <div className="wave wave3"></div>
-                  </div>
-                )}
-              </div>
+          {/* Navigation Buttons */}
+          <div className="flex justify-center gap-4">
+            <GlassButton
+              variant="secondary"
+              size="lg"
+              onClick={() => scrollToSection(0)}
+            >
+              Back: Skin Barriers
+            </GlassButton>
+            <GlassButton
+              variant="primary"
+              size="lg"
+              onClick={() => scrollToSection(2)}
+              disabled={!selectedHeartArea}
+            >
+              {selectedHeartArea 
+                ? `Next: Record ${heartAreas.find(area => area.key === selectedHeartArea)?.label}`
+                : 'Select Heart Area First'}
+            </GlassButton>
+          </div>
+        </GlassCard>
+      </section>
 
-              <div className="recording-timer mb-6">
-                <span className="text-4xl font-mono text-white">
-                  {formatTime(recordingTime)}
+      {/* Section 3: Recording Controls */}
+      <section id="section-2" className="snap-section section-3">
+        <GlassCard padding="lg" className="w-full max-w-3xl">
+          <div className="text-center mb-6">
+            <Title level={2} style={{ color: 'white', margin: 0 }}>
+              Record Heart Sounds
+            </Title>
+            <p className="text-white/70 text-lg mt-2">
+              {selectedHeartArea 
+                ? `Recording ${heartAreas.find(area => area.key === selectedHeartArea)?.label} area`
+                : "Ready to record when you select a heart area"}
+            </p>
+          </div>
+
+          {/* Recording Visualizer and Timer */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="recording-visualizer mb-6">
+              <div className={`heart-icon ${isRecording ? "beating" : ""}`}>
+                <span style={{ fontSize: "4rem", display: "block" }}>
+                  🫀
                 </span>
-                <p className="text-white/60 mt-2">
-                  {isRecording ? "Recording..." : "Ready to record"}
-                </p>
               </div>
-
-              {recordingTime > 0 && (
-                <div className="mb-6">
-                  <Progress
-                    percent={(recordingTime / 30) * 100}
-                    showInfo={false}
-                    strokeColor="#8C7DD1"
-                    trailColor="rgba(255,255,255,0.2)"
-                    style={{
-                      border: '1px solid rgba(172, 172, 230, 0.5)',
-                      borderRadius: '6px',
-                      padding: '2px'
-                    }}
-                  />
-                  <p className="text-white/60 text-sm mt-2">
-                    {30 - recordingTime} seconds remaining
-                  </p>
+              {isRecording && (
+                <div className="sound-waves">
+                  <div className="wave wave1"></div>
+                  <div className="wave wave2"></div>
+                  <div className="wave wave3"></div>
                 </div>
               )}
-
-              <div className="recording-controls">
-                {/* Debug info - remove later */}
-                <div className="text-xs text-white/50 mb-2">
-                  Debug: isRecording={isRecording.toString()}, currentStep={currentStep}, analysisComplete={analysisComplete.toString()}, selectedArea={selectedHeartArea}
-                </div>
-
-                {/* Always show start button when not recording and not analyzing */}
-                {!isRecording && currentStep === 0 && !analysisComplete && (
-                  <GlassButton
-                    variant="primary"
-                    size="lg"
-                    icon={<PlayCircleOutlined />}
-                    onClick={handleStartRecording}
-                    disabled={!selectedHeartArea}
-                  >
-                    {selectedHeartArea
-                      ? `Start Recording - ${heartAreas.find(area => area.key === selectedHeartArea)?.label || selectedHeartArea}`
-                      : 'Select Heart Area First'}
-                  </GlassButton>
-                )}
-
-                {/* Show message when all recordings complete but still allow new ones */}
-                {!isRecording && currentStep === 0 && !analysisComplete && Object.values(completedRecordings).filter(Boolean).length === 4 && (
-                  <div className="text-center mb-4">
-                    <p className="text-green-400 text-sm mb-2">
-                      ✓ All 4 areas recorded! You can record additional areas or start analysis.
-                    </p>
-                    <GlassButton
-                      variant="success"
-                      size="lg"
-                      onClick={() => setCurrentStep(1)}
-                    >
-                      Start Comprehensive Analysis
-                    </GlassButton>
-                  </div>
-                )}
-
-                {/* Always show stop button when recording */}
-                {isRecording && (
-                  <GlassButton
-                    variant="danger"
-                    size="lg"
-                    icon={<StopOutlined />}
-                    onClick={handleStopRecording}
-                  >
-                    Stop Recording
-                  </GlassButton>
-                )}
-
-                {/* Show new recording button when analysis is complete */}
-                {analysisComplete && (
-                  <div className="space-y-3">
-                    <GlassButton
-                      variant="secondary"
-                      size="lg"
-                      onClick={handleReset}
-                    >
-                      New Recording Session
-                    </GlassButton>
-                  </div>
-                )}
-              </div>
-            </div>
-          </GlassCard>
-        </div>
-
-        {/* Right Panel - Steps and Results */}
-        <div className="flex flex-col">
-          <GlassCard padding="lg" className="flex-1">
-            <div className="mb-8">
-              <Steps current={currentStep} direction="vertical">
-                {steps.map((step, index) => (
-                  <Step
-                    key={index}
-                    title={<span className="text-white">{step.title}</span>}
-                    description={
-                      <span className="text-white/70">{step.description}</span>
-                    }
-                  />
-                ))}
-              </Steps>
             </div>
 
-            {currentStep === 1 && (
-              <div className="text-center">
-                <div className="analysis-spinner mb-4">
-                  <div className="spinner"></div>
-                </div>
-                <p className="text-white">Analyzing all heart valve areas...</p>
-                <p className="text-white/60 text-sm">
-                  Processing comprehensive heart sound data from 4 locations
+            <div className="recording-timer text-center mb-6">
+              <span className="text-4xl font-mono text-white">
+                {formatTime(recordingTime)}
+              </span>
+              <p className="text-white/60 text-lg mt-2">
+                {isRecording ? "Recording..." : "Ready to record"}
+              </p>
+            </div>
+
+            {recordingTime > 0 && (
+              <div className="w-full max-w-md">
+                <Progress
+                  percent={(recordingTime / 30) * 100}
+                  showInfo={false}
+                  strokeColor="#8C7DD1"
+                  trailColor="rgba(255,255,255,0.2)"
+                />
+                <p className="text-white/60 text-center mt-2">
+                  {30 - recordingTime} seconds remaining
                 </p>
+              </div>
+            )}
+          </div>
+
+          {/* Recording Controls */}
+          <div className="recording-controls text-center mb-8">
+            {!isRecording && !analysisComplete && (
+              <GlassButton
+                variant="primary"
+                size="lg"
+                icon={<PlayCircleOutlined />}
+                onClick={handleStartRecording}
+                disabled={!selectedHeartArea}
+                className="mb-4"
+              >
+                {selectedHeartArea
+                  ? `Start Recording`
+                  : 'Go back and select a heart area first'}
+              </GlassButton>
+            )}
+
+            {isRecording && (
+              <GlassButton
+                variant="danger"
+                size="lg"
+                icon={<StopOutlined />}
+                onClick={handleStopRecording}
+                className="mb-4"
+              >
+                Stop Recording
+              </GlassButton>
+            )}
+
+            {Object.values(completedRecordings).filter(Boolean).length === 4 && !analysisComplete && (
+              <div className="mb-4">
+                <p className="text-green-400 text-lg mb-4">
+                  ✓ All 4 areas recorded!
+                </p>
+                <GlassButton
+                  variant="success"
+                  size="lg"
+                  onClick={() => setCurrentStep(1)}
+                  className="mb-4"
+                >
+                  Start Comprehensive Analysis
+                </GlassButton>
               </div>
             )}
 
             {analysisComplete && (
-              <div className="results-panel">
+              <div className="text-center">
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-4">
+                  <div className="flex items-center justify-center gap-2 mb-4">
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
                     <h3 className="text-xl font-semibold text-white">
-                      Comprehensive Analysis Complete
+                      Analysis Complete
                     </h3>
                   </div>
+                  <p className="text-green-400 text-lg">
+                    ✓ {Math.random() > 0.7 ? "Minor irregularities detected - recommend follow-up" : "Normal heart sounds detected"}
+                  </p>
                 </div>
-
-                <div className="space-y-4">
-                  <div className="result-item">
-                    <p className="text-white/60 text-sm uppercase tracking-wide">
-                      Overall Heart Rate
-                    </p>
-                    <p className="text-white text-lg font-semibold">
-                      {Math.floor(Math.random() * 15) + 65} BPM
-                    </p>
-                  </div>
-
-                  <div className="result-item">
-                    <p className="text-white/60 text-sm uppercase tracking-wide">
-                      Rhythm Analysis
-                    </p>
-                    <p className="text-white text-lg font-semibold">
-                      {Math.random() > 0.8 ? "Irregular" : "Regular"}
-                    </p>
-                  </div>
-
-                  {/* Individual Valve Results */}
-                  <div className="border-t border-white/20 pt-4 mt-4">
-                    <p className="text-white/60 text-sm uppercase tracking-wide mb-3">
-                      Valve Area Results
-                    </p>
-                    <div className="space-y-2">
-                      {Object.entries(recordingResults).map(([area, result]) => (
-                        <div key={area} className="flex items-center justify-between p-2 bg-white/5 rounded">
-                          <span className="text-white text-sm">
-                            {heartAreas.find(h => h.key === area)?.label}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-green-400 text-xs">
-                              {result.quality} Quality
-                            </span>
-                            <span className="text-white/60 text-xs">
-                              {result.duration}s
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="result-item">
-                    <p className="text-white/60 text-sm uppercase tracking-wide">
-                      Comprehensive Assessment
-                    </p>
-                    <p className="text-white text-lg font-semibold">
-                      {Math.random() > 0.7 ? "Minor Irregularities Detected" : "Normal Heart Sounds"}
-                    </p>
-                  </div>
-
-                  <div className={`mt-6 p-4 rounded-xl border ${
-                    Math.random() > 0.7
-                      ? 'bg-yellow-500/20 border-yellow-500/30'
-                      : 'bg-green-500/20 border-green-500/30'
-                  }`}>
-                    <p className={`font-medium ${
-                      Math.random() > 0.7 ? 'text-yellow-300' : 'text-green-300'
-                    }`}>
-                      {Math.random() > 0.7
-                        ? '⚠ Recommend follow-up examination'
-                        : '✓ No significant abnormalities detected'}
-                    </p>
-                    <p className="text-white/70 text-sm mt-1">
-                      Analysis based on recordings from all 4 heart valve areas.
-                      Results should be reviewed by a qualified healthcare professional.
-                    </p>
-                  </div>
-                </div>
+                <GlassButton
+                  variant="secondary"
+                  size="lg"
+                  onClick={handleReset}
+                >
+                  Start New Recording Session
+                </GlassButton>
               </div>
             )}
-          </GlassCard>
-        </div>
-      </div>
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-center gap-4">
+            <GlassButton
+              variant="secondary"
+              size="lg"
+              onClick={() => scrollToSection(1)}
+            >
+              Back: Heart Location
+            </GlassButton>
+            {Object.values(completedRecordings).some(Boolean) && (
+              <GlassButton
+                variant="primary"
+                size="lg"
+                onClick={() => scrollToSection(1)}
+              >
+                Record Another Area
+              </GlassButton>
+            )}
+          </div>
+        </GlassCard>
+      </section>
     </div>
   );
 }
