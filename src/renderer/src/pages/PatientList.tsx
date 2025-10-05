@@ -266,7 +266,7 @@ function PatientList(): JSX.Element {
                     <div className="patient-avatar">{patient.name.charAt(0)}</div>
                     <div className="patient-details">
                       <p className="patient-name">{patient.name}</p>
-                      <p className="patient-dob">{patient.dob}</p>
+                      <p className="patient-dob">{new Date(patient.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                     </div>
                   </div>
                 </div>
@@ -285,7 +285,6 @@ function PatientList(): JSX.Element {
               <div className="patient-header-avatar">{selectedPatient.name.charAt(0)}</div>
               <div>
                 <h1 className="patient-title">{selectedPatient.name}</h1>
-                <p className="patient-id">Patient ID: #{selectedPatient.id.toString().padStart(5, '0')}</p>
               </div>
             </div>
           ) : (
@@ -536,7 +535,7 @@ function PatientList(): JSX.Element {
         >
           <Form.Item
             name="name"
-            label="Patient Name"
+            label="Patient Name *"
             rules={[
               { required: true, message: 'Please enter patient name' },
               { min: 2, message: 'Name must be at least 2 characters' }
@@ -547,7 +546,7 @@ function PatientList(): JSX.Element {
 
           <Form.Item
             name="dob"
-            label="Date of Birth"
+            label="Date of Birth *"
             rules={[
               { required: true, message: 'Please select date of birth' }
             ]}
@@ -561,10 +560,10 @@ function PatientList(): JSX.Element {
 
           <Form.Item
             name="patient_uid"
-            label="Patient ID"
+            label="Patient UID *"
             rules={[
-              { required: true, message: 'Please enter patient ID' },
-              { min: 3, message: 'Patient ID must be at least 3 characters' }
+              { required: true, message: 'Please enter patient UID' },
+              { min: 3, message: 'Patient UID must be at least 3 characters' }
             ]}
           >
             <Input placeholder="Unique patient identifier" />
@@ -573,7 +572,7 @@ function PatientList(): JSX.Element {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
             <Form.Item
               name="height"
-              label="Height (cm)"
+              label="Height (cm) *"
               rules={[
                 { required: true, message: 'Please enter height' },
                 { type: 'number', min: 50, max: 250, message: 'Height must be between 50-250 cm' }
@@ -584,7 +583,7 @@ function PatientList(): JSX.Element {
 
             <Form.Item
               name="weight"
-              label="Weight (kg)"
+              label="Weight (kg) *"
               rules={[
                 { required: true, message: 'Please enter weight' },
                 { type: 'number', min: 10, max: 300, message: 'Weight must be between 10-300 kg' }
