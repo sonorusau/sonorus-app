@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, Modal, Form, DatePicker, message, Tooltip } from "antd";
-import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, HeartOutlined, PlayCircleOutlined, DownloadOutlined } from "@ant-design/icons";
+import { SearchOutlined, PlusOutlined, EditOutlined, DeleteOutlined, HeartOutlined, PlayCircleOutlined, DownloadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import GlassCard from "../components/GlassCard";
@@ -266,7 +266,7 @@ function PatientList(): JSX.Element {
                     <div className="patient-avatar">{patient.name.charAt(0)}</div>
                     <div className="patient-details">
                       <p className="patient-name">{patient.name}</p>
-                      <p className="patient-dob">{new Date(patient.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                      <p className="patient-dob">DOB: {new Date(patient.dob).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                     </div>
                   </div>
                 </div>
@@ -420,9 +420,6 @@ function PatientList(): JSX.Element {
                                     {batch.is_complete ? 'Complete' : 'In Progress'}
                                   </div>
                                 </div>
-                                <div className={`transform transition-transform ${isBatchExpanded ? 'rotate-180' : ''}`}>
-                                  ▼
-                                </div>
                               </div>
                               <div className="recording-details">
                                 <span className="recording-date">
@@ -431,6 +428,14 @@ function PatientList(): JSX.Element {
                                 <span className="mx-2">•</span>
                                 <span className="text-white/70">{progress.completed}/{progress.total} heart areas</span>
                               </div>
+                              {batch.skin_barriers && batch.skin_barriers.length > 0 && (
+                                <div className="mt-2 flex items-center gap-2">
+                                  <ExclamationCircleOutlined className="text-yellow-500 text-xs" />
+                                  <span className="text-yellow-500 text-xs">
+                                    Barriers: {batch.skin_barriers.map(barrier => `${barrier.level} ${barrier.option}`).join(', ')}
+                                  </span>
+                                </div>
+                              )}
                               {progress.percentage > 0 && progress.percentage < 100 && (
                                 <div className="mt-2 w-full max-w-xs">
                                   <div className="w-full bg-white/20 rounded-full h-1">
@@ -445,29 +450,34 @@ function PatientList(): JSX.Element {
                                 </div>
                               )}
                             </div>
-                            <div className="recording-actions">
-                              {!batch.is_complete && progress.completed > 0 && (
-                                <Tooltip title="Resume Recording Session">
+                            <div className="flex items-center gap-3">
+                              <div className={`transform transition-transform cursor-pointer ${isBatchExpanded ? 'rotate-180' : ''}`}>
+                                ▼
+                              </div>
+                              <div className="recording-actions flex items-center gap-2">
+                                {!batch.is_complete && progress.completed > 0 && (
+                                  <Tooltip title="Resume Recording Session">
+                                    <GlassButton
+                                      size="sm"
+                                      variant="primary"
+                                      onClick={() => handleResumeBatch(batch)}
+                                    >
+                                      Resume
+                                    </GlassButton>
+                                  </Tooltip>
+                                )}
+                                <Tooltip title="Delete Recording Session">
                                   <GlassButton
                                     size="sm"
-                                    variant="primary"
-                                    onClick={() => handleResumeBatch(batch)}
-                                  >
-                                    Resume
-                                  </GlassButton>
+                                    variant="danger"
+                                    icon={<DeleteOutlined />}
+                                    onClick={() => handleDeleteBatch(batch.id)}
+                                  />
                                 </Tooltip>
-                              )}
-                              <Tooltip title="Delete Recording Session">
-                                <GlassButton
-                                  size="sm"
-                                  variant="danger"
-                                  icon={<DeleteOutlined />}
-                                  onClick={() => handleDeleteBatch(batch.id)}
-                                />
-                              </Tooltip>
-                              <GlassButton size="sm" variant="secondary">
-                                View
-                              </GlassButton>
+                                <GlassButton size="sm" variant="secondary">
+                                  View
+                                </GlassButton>
+                              </div>
                             </div>
                           </div>
 

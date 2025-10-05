@@ -531,6 +531,14 @@ function RecordingsList(): JSX.Element {
                                       <span>{progress.completed}/{progress.total} areas</span>
                                     </div>
                                   </div>
+                                  {batch.skin_barriers && batch.skin_barriers.length > 0 && (
+                                    <div className="mt-2 flex items-center gap-2">
+                                      <ExclamationCircleOutlined className="text-yellow-500 text-xs" />
+                                      <span className="text-yellow-500 text-xs">
+                                        Barriers: {batch.skin_barriers.map(barrier => `${barrier.level} ${barrier.option}`).join(', ')}
+                                      </span>
+                                    </div>
+                                  )}
                                   {progress.percentage > 0 && progress.percentage < 100 && (
                                     <div className="mt-2 w-full max-w-xs">
                                       <div className="w-full bg-white/20 rounded-full h-1.5">
@@ -547,34 +555,36 @@ function RecordingsList(): JSX.Element {
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {!batch.is_complete && progress.completed > 0 && (
-                                  <Tooltip title="Resume Recording Session">
-                                    <div onClick={(e) => e.stopPropagation()}>
-                                      <GlassButton
-                                        variant="primary"
-                                        size="sm"
-                                        onClick={() => handleResumeBatch(batch)}
-                                      >
-                                        Resume
-                                      </GlassButton>
-                                    </div>
-                                  </Tooltip>
-                                )}
-                                <Tooltip title="Delete Recording Session">
-                                  <div onClick={(e) => e.stopPropagation()}>
-                                    <GlassButton
-                                      variant="danger"
-                                      size="sm"
-                                      icon={<DeleteOutlined />}
-                                      onClick={() => handleDeleteBatch(batch.id, patientId)}
-                                    />
-                                  </div>
-                                </Tooltip>
                                 <div className="text-white/60 text-sm mr-2">
                                   {batchRecordings.length} recording{batchRecordings.length !== 1 ? 's' : ''}
                                 </div>
-                                <div className={`transform transition-transform ${isBatchExpanded ? 'rotate-180' : ''}`}>
+                                <div className={`transform transition-transform cursor-pointer mr-3 ${isBatchExpanded ? 'rotate-180' : ''}`}>
                                   ▼
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {!batch.is_complete && progress.completed > 0 && (
+                                    <Tooltip title="Resume Recording Session">
+                                      <div onClick={(e) => e.stopPropagation()}>
+                                        <GlassButton
+                                          variant="primary"
+                                          size="sm"
+                                          onClick={() => handleResumeBatch(batch)}
+                                        >
+                                          Resume
+                                        </GlassButton>
+                                      </div>
+                                    </Tooltip>
+                                  )}
+                                  <Tooltip title="Delete Recording Session">
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                      <GlassButton
+                                        variant="danger"
+                                        size="sm"
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => handleDeleteBatch(batch.id, patientId)}
+                                      />
+                                    </div>
+                                  </Tooltip>
                                 </div>
                               </div>
                             </div>
