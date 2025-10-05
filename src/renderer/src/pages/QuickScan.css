@@ -55,6 +55,31 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
   padding: 0 !important;
 }
 
+/* Recording Context Panel - Below Patient Info */
+.recording-context-panel {
+  position: fixed !important;
+  top: calc(5rem + 280px + 0.25rem) !important; /* Below patient panel with gap */
+  right: 1rem !important; /* Align with patient panel */
+  width: 220px !important; /* Same width as patient panel */
+  height: auto !important;
+  transform: none !important;
+  z-index: 998 !important; /* Below patient panel but above content */
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Recording Context Panel for Anonymous Sessions */
+.recording-context-panel--anonymous {
+  position: fixed !important;
+  right: 1rem !important;
+  top: 5rem !important; /* Below navbar for anonymous sessions */
+  width: 220px !important;
+  height: auto !important;
+  z-index: 998 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 /* Remove top padding from first section since no header above */
 .quick-scan-container .snap-section:first-of-type {
   padding-top: 2rem !important; /* Back to normal padding */
@@ -431,6 +456,18 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
     width: 200px !important; /* Slightly narrower on tablets */
     right: 0.5rem !important;
   }
+
+  /* Adjust recording context panel for tablets */
+  .recording-context-panel {
+    width: 200px !important;
+    right: 0.5rem !important;
+    top: calc(5rem + 260px + 0.25rem) !important; /* Adjust for smaller patient panel */
+  }
+
+  .recording-context-panel--anonymous {
+    width: 200px !important;
+    right: 0.5rem !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -452,6 +489,18 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
   /* Hide patient panel on mobile to preserve space */
   .patient-info-section {
     display: none !important;
+  }
+
+  /* Hide recording context panel on mobile since patient panel is hidden */
+  .recording-context-panel {
+    display: none !important;
+  }
+
+  /* Show anonymous recording context panel on mobile but smaller */
+  .recording-context-panel--anonymous {
+    width: 180px !important;
+    right: 0.5rem !important;
+    top: 4rem !important;
   }
 }
 
@@ -479,5 +528,16 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
   .patient-details-table td {
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
+  }
+
+  /* Compact recording context panel on short screens */
+  .recording-context-panel {
+    top: calc(4rem + 200px + 0.25rem) !important; /* Adjust for compact patient panel */
+    width: 180px !important;
+  }
+
+  .recording-context-panel--anonymous {
+    top: 4rem !important;
+    width: 180px !important;
   }
 }
