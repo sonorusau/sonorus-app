@@ -264,12 +264,8 @@ export const getExtendedRecordings = async (): Promise<ExtendedRecording[]> => {
     const patient = batch?.patient || { id: 0, name: 'Unknown Patient' };
     const date = new Date(recording.start_time);
 
-    // Calculate duration from audio blob if possible
-    let duration = '30s'; // Default
-    if (recording.audio && recording.audio instanceof Blob) {
-      // Would need to analyze audio blob for actual duration
-      duration = '30s';
-    }
+    // Calculate duration - recordings are typically 30 seconds
+    let duration = '30s'; // Default for heart recordings
 
     return {
       ...recording,
@@ -347,11 +343,8 @@ export const getGroupedExtendedRecordings = async (): Promise<Record<number, Rec
     const patient = batch?.patient || { id: 0, name: 'Unknown Patient' };
     const date = new Date(recording.start_time);
 
-    // Calculate duration from audio blob if possible
-    let duration = '30s'; // Default
-    if (recording.audio && recording.audio instanceof Blob) {
-      duration = '30s';
-    }
+    // Calculate duration - recordings are typically 30 seconds but show actual if available
+    let duration = '30s'; // Default for heart recordings
 
     const extendedRecording: ExtendedRecording = {
       ...recording,

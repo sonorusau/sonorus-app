@@ -481,17 +481,13 @@ function PatientList(): JSX.Element {
                                     <div className="recording-info">
                                       <div className="recording-header">
                                         <div className="recording-type">{recording.location} Valve</div>
-                                        <div className="recording-status status-completed">
-                                          ✓
-                                        </div>
                                       </div>
                                       <div className="recording-details">
                                         <span className="recording-date">
                                           {new Date(recording.start_time).toLocaleDateString()} at {new Date(recording.start_time).toLocaleTimeString()}
                                         </span>
-                                      </div>
-                                      <div className="recording-result">
-                                        30s heart sound recording
+                                        <span className="mx-2">•</span>
+                                        <span className="text-white/70">30s recording</span>
                                       </div>
                                     </div>
                                     <div className="recording-actions">

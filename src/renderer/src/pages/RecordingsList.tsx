@@ -608,7 +608,7 @@ function RecordingsList(): JSX.Element {
                                         </div>
                                       </div>
 
-                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                      <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div className="flex items-center gap-2">
                                           <CalendarOutlined className="text-white/60" />
                                           <span className="text-white/70">{recording.time}</span>
@@ -616,15 +616,6 @@ function RecordingsList(): JSX.Element {
                                         <div className="flex items-center gap-2">
                                           <HeartOutlined className="text-white/60" />
                                           <span className="text-white/70">{recording.duration}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-white/60">Result:</span>
-                                          <span
-                                            className="font-medium"
-                                            style={{ color: getResultColor(recording.result) }}
-                                          >
-                                            {recording.result}
-                                          </span>
                                         </div>
                                       </div>
 
