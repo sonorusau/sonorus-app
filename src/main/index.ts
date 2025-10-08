@@ -15,12 +15,19 @@ import {
 import { loadFile } from "./system/loadFile";
 
 function createWindow(): void {
-  // Create the browser window.
+  // Create the browser window with platform-specific styling
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
     autoHideMenuBar: true,
+    // Platform-specific window styling
+    ...(process.platform === "darwin"
+      ? {
+          titleBarStyle: "hiddenInset",
+          trafficLightPosition: { x: 20, y: 20 },
+        }
+      : {}),
     ...(process.platform === "linux" ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.mjs"),
