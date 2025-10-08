@@ -60,43 +60,35 @@ function ConfirmationModal({
         backgroundColor: "rgba(0, 0, 0, 0.7)",
         backdropFilter: "blur(8px)",
       }}
-      style={{
-        top: "50%",
-        transform: "translateY(-50%)",
-      }}
-      bodyStyle={{
-        padding: 0,
-        background: "transparent",
-      }}
-      className="confirmation-modal"
-    >
-      <GlassCard padding="lg" className="confirmation-modal-content">
-        <div className="flex items-start gap-4 mb-6">
-          <div className="flex-shrink-0 mt-1">{getIcon()}</div>
-          <div className="flex-1">
-            <h3 className="text-white text-xl font-semibold mb-4">{title}</h3>
-            <div className="text-white/90">{content}</div>
+      modalRender={() => (
+        <GlassCard padding="lg">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="flex-shrink-0 mt-1">{getIcon()}</div>
+            <div className="flex-1">
+              <h3 className="text-white text-xl font-semibold mb-4">{title}</h3>
+              <div className="text-white/90">{content}</div>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex justify-end gap-3 mt-6">
-          <GlassButton
-            variant="secondary"
-            onClick={onCancel}
-            disabled={loading}
-          >
-            {cancelText}
-          </GlassButton>
-          <GlassButton
-            variant={getConfirmButtonVariant()}
-            onClick={onConfirm}
-            disabled={loading}
-          >
-            {loading ? "Processing..." : confirmText}
-          </GlassButton>
-        </div>
-      </GlassCard>
-    </Modal>
+          
+          <div className="flex justify-end gap-3 mt-6">
+            <GlassButton
+              variant="secondary"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              {cancelText}
+            </GlassButton>
+            <GlassButton
+              variant={getConfirmButtonVariant()}
+              onClick={onConfirm}
+              disabled={loading}
+            >
+              {loading ? "Processing..." : confirmText}
+            </GlassButton>
+          </div>
+        </GlassCard>
+      )}
+    />
   );
 }
 
