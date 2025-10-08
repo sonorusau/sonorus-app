@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import GlassCard from "../components/GlassCard";
 import GlassButton from "../components/GlassButton";
+import ConfirmationModal from "../components/ConfirmationModal";
 import Title from "antd/es/typography/Title";
 import type Patient from "../types/Patient";
 import type PatientDetails from "../types/PatientDetails";
@@ -36,6 +37,13 @@ function PatientList(): JSX.Element {
   const [expandedBatches, setExpandedBatches] = useState<Set<number>>(new Set());
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   const [form] = Form.useForm<NewPatientFormData>();
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    type: 'batch' | 'patient';
+    id: number;
+    title: string;
+    content: React.ReactNode;
+  } | null>(null);
 
   useEffect(() => {
     loadPatients();
@@ -185,33 +193,95 @@ function PatientList(): JSX.Element {
   };
 
   const handleDeleteBatch = async (batchId: number) => {
-    try {
-      await deleteRecordingBatch(batchId);
-      // Reload patient batches
-      if (selectedPatient) {
-        await handlePatientSelect(selectedPatient);
-      }
-      message.success('Recording session deleted successfully');
-    } catch (error) {
-      console.error('Error deleting recording batch:', error);
-      message.error('Failed to delete recording session');
-    }
+    const batch = patientBatches.find(b => b.id === batchId);
+    if (!batch) return;
+
+    const recordingCount = batch.recordings?.length || 0;
+    const batchDate = new Date(batch.start_time).toLocaleDateString();
+
+    setDeleteModal({
+      open: true,
+      type: 'batch',
+      id: batchId,
+      title: 'Delete Recording Session?',
+      content: (
+        <div>
+          <p className="text-white/90 mb-3">This will permanently delete:</p>
+          <ul className="ml-5 mb-4 space-y-1">
+            <li><strong className="text-white">Session #{batchId}</strong> from <span className="text-white/80">{batchDate}</span></li>
+            <li><strong className="text-white">{recordingCount} recording{recordingCount !== 1 ? 's' : ''}</strong></li>
+            {batch.skin_barriers && batch.skin_barriers.length > 0 && (
+              <li><strong className="text-white">Skin barrier data</strong></li>
+            )}
+          </ul>
+          <p className="text-red-400 font-medium">
+            This action cannot be undone.
+          </p>
+        </div>
+      )
+    });
   };
 
   const handleDeletePatient = async (patientId: number) => {
+    const patient = patients.find(p => p.id === patientId);
+    if (!patient) return;
+
+    const batches = patientBatches.length;
+    const totalRecordings = patientBatches.reduce((total, batch) =>
+      total + (batch.recordings?.length || 0), 0);
+
+    setDeleteModal({
+      open: true,
+      type: 'patient',
+      id: patientId,
+      title: 'Delete Patient?',
+      content: (
+        <div>
+          <p className="text-white/90 mb-3">This will permanently delete patient:</p>
+          <ul className="ml-5 mb-4 space-y-1">
+            <li><strong className="text-white">{patient.name}</strong></li>
+            <li><strong className="text-white">{batches} recording session{batches !== 1 ? 's' : ''}</strong></li>
+            <li><strong className="text-white">{totalRecordings} recording{totalRecordings !== 1 ? 's' : ''}</strong></li>
+            <li><strong className="text-white">All medical history and patient data</strong></li>
+          </ul>
+          <p className="text-red-400 font-medium">
+            This action cannot be undone.
+          </p>
+        </div>
+      )
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModal) return;
+
     try {
-      await deletePatient(patientId);
-      await loadPatients();
-      message.success('Patient deleted successfully');
-      if (selectedPatient?.id === patientId) {
-        setSelectedPatient(null);
-        setPatientBatches([]);
-        setExpandedBatches(new Set());
+      if (deleteModal.type === 'batch') {
+        await deleteRecordingBatch(deleteModal.id);
+        if (selectedPatient) {
+          await handlePatientSelect(selectedPatient);
+        }
+        message.success('Recording session deleted successfully');
+      } else if (deleteModal.type === 'patient') {
+        await deletePatient(deleteModal.id);
+        await loadPatients();
+        message.success('Patient deleted successfully');
+        if (selectedPatient?.id === deleteModal.id) {
+          setSelectedPatient(null);
+          setPatientBatches([]);
+          setExpandedBatches(new Set());
+        }
       }
+      
+      setDeleteModal(null);
     } catch (error) {
-      console.error('Error deleting patient:', error);
-      message.error('Failed to delete patient');
+      console.error('Error deleting:', error);
+      message.error(`Failed to delete ${deleteModal.type}`);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteModal(null);
   };
 
   const filteredPatients = patients.filter(patient =>
@@ -499,7 +569,7 @@ function PatientList(): JSX.Element {
                                         <span className="text-white/70">30s recording</span>
                                       </div>
                                     </div>
-                                    <div className="recording-actions">
+                                    <div className="recording-actions flex items-center gap-2">
                                       <Tooltip title="Play Recording">
                                         <GlassButton size="sm" variant="secondary" icon={<PlayCircleOutlined />} />
                                       </Tooltip>
@@ -637,6 +707,18 @@ function PatientList(): JSX.Element {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        open={deleteModal?.open || false}
+        title={deleteModal?.title || ''}
+        content={deleteModal?.content}
+        type="danger"
+        confirmText={deleteModal?.type === 'patient' ? 'Delete Patient' : 'Delete Session'}
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 }
