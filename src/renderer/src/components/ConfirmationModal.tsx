@@ -86,9 +86,9 @@ function ConfirmationModal({
   const handleConfirmClick = async (e?: React.MouseEvent) => {
     e?.preventDefault?.();
     e?.stopPropagation?.();
-    
+
     if (loading) return;
-    
+
     try {
       setInternalLoading(true);
       await onConfirm();
