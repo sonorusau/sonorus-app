@@ -339,6 +339,34 @@
   color: inherit !important;
 }
 
+/* Light theme table borders and text - make them visible */
+.light-theme .patient-details-table tr:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2) !important;
+}
+
+.light-theme .patient-details-table td.label {
+  color: rgba(0, 0, 0, 0.7) !important;
+}
+
+.light-theme .patient-details-table td.value {
+  color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Light theme audio waveform grid lines - make them visible */
+.light-theme .audio-waveform::before {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.15) 0,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 32px
+  ) !important;
+}
+
+.light-theme .audio-waveform__baseline {
+  stroke: rgba(0, 0, 0, 0.3) !important;
+}
+
 /* Tooltip styling for light theme */
 .light-theme .ant-tooltip-inner {
   background-color: rgba(15, 23, 42, 0.9) !important;
