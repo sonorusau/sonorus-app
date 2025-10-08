@@ -22,10 +22,10 @@ function GlassTable({ rows, className = "" }: GlassTableProps): JSX.Element {
         <tbody>
           {rows.map((row, index) => (
             <tr key={index} className="border-b border-white/10 last:border-b-0">
-              <td className="py-2 pr-4 text-white/70 font-medium text-sm w-1/3">
+              <td className="py-1 pr-3 text-white/70 font-medium text-sm w-1/3">
                 {row.label}:
               </td>
-              <td className="py-2 text-white/90 text-sm">
+              <td className="py-1 text-white/90 text-sm">
                 {row.value}
               </td>
             </tr>
