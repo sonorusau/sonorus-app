@@ -4,3 +4,6 @@ out
 .DS_Store
 *.log*
 .env
+
+# AI Development Documentation (contains sensitive AI assistance disclosure)
+CLAUDE.md

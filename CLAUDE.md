@@ -327,5 +327,29 @@ npm run typecheck  # TypeScript validation
 
 ---
 
+## 🤖 AI Development Assistance
+
+This project has been developed with assistance from Claude (Anthropic's AI assistant) to accelerate development and ensure code quality. The AI assistance includes:
+
+### Development Areas Assisted:
+- **Component Architecture**: Design of reusable React components following best practices
+- **Glassmorphic Design System**: Implementation of consistent visual styling and theming
+- **TypeScript Integration**: Type-safe component interfaces and data structures  
+- **Code Optimization**: Performance improvements and clean code practices
+- **Documentation**: Comprehensive codebase documentation and comments
+- **Testing Patterns**: Component testing strategies and implementation
+- **Accessibility**: WCAG compliance and inclusive design patterns
+
+### Human Oversight:
+- **Product Vision**: All core features and user experience decisions made by human developers
+- **Architecture Decisions**: System design and technology choices reviewed and approved by humans
+- **Quality Assurance**: All AI-generated code reviewed, tested, and validated by development team
+- **Medical Domain**: All medical terminology, workflows, and compliance considerations verified by domain experts
+
+### AI Contribution Transparency:
+This disclosure ensures full transparency about AI assistance in the development process while maintaining confidence in code quality through human oversight and validation.
+
+---
+
 *Last Updated: January 2025*  
 *Sonorus v1.0 - Professional Heart Sound Analysis Platform*
