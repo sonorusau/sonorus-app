@@ -57,8 +57,10 @@ function ConfirmationModal({
   confirmText = "Confirm",
   cancelText = "Cancel",
   type = "info",
-  loading = false,
+  loading: externalLoading = false,
 }: ConfirmationModalProps): JSX.Element {
+  const [internalLoading, setInternalLoading] = React.useState(false);
+  const loading = externalLoading || internalLoading;
   const getIcon = () => {
     switch (type) {
       case "danger":
@@ -78,6 +80,22 @@ function ConfirmationModal({
         return "secondary" as const;
       default:
         return "primary" as const;
+    }
+  };
+
+  const handleConfirmClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (loading) return;
+    
+    try {
+      setInternalLoading(true);
+      await onConfirm();
+    } catch (error) {
+      console.error('Error in confirm action:', error);
+    } finally {
+      setInternalLoading(false);
     }
   };
 
@@ -112,7 +130,7 @@ function ConfirmationModal({
             </GlassButton>
             <GlassButton
               variant={getConfirmButtonVariant()}
-              onClick={onConfirm}
+              onClick={handleConfirmClick}
               disabled={loading}
             >
               {loading ? "Processing..." : confirmText}

@@ -383,10 +383,13 @@ function RecordingsList(): JSX.Element {
         await deleteRecordingBatch(deleteModal.id);
       }
 
-      await loadRecordings(); // Reload the data
+      // Close modal first, then reload data
       setDeleteModal(null);
+      await loadRecordings(); // Reload the data
     } catch (error) {
       console.error('Error deleting:', error);
+      // Keep modal open on error so user can try again or cancel
+      alert('Failed to delete. Please try again.');
     }
   };
 
