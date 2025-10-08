@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import GlassCard from "../components/GlassCard";
 import GlassButton from "../components/GlassButton";
-import ConfirmationModal from "../components/ConfirmationModal";
+import ConfirmationModal, { GlassTable, type TableRow } from "../components/ConfirmationModal";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
 import type Recording from "../types/Recording";
@@ -272,6 +272,13 @@ function RecordingsList(): JSX.Element {
 
     if (!recordingToDelete) return;
 
+    const tableRows: TableRow[] = [
+      { label: "Heart Valve", value: `${formatHeartArea(recordingToDelete.location)} Valve` },
+      { label: "Patient", value: recordingToDelete.patientName },
+      { label: "Date", value: recordingToDelete.time },
+      { label: "Duration", value: recordingToDelete.duration }
+    ];
+
     setDeleteModal({
       open: true,
       type: 'recording',
@@ -279,13 +286,8 @@ function RecordingsList(): JSX.Element {
       title: 'Delete Recording?',
       content: (
         <div>
-          <p className="text-white/90 mb-3">This will permanently delete:</p>
-          <ul className="ml-5 mb-4 space-y-1">
-            <li><strong className="text-white">{formatHeartArea(recordingToDelete.location)} Valve</strong> recording</li>
-            <li><strong className="text-white">Patient:</strong> <span className="text-white/80">{recordingToDelete.patientName}</span></li>
-            <li><strong className="text-white">Date:</strong> <span className="text-white/80">{recordingToDelete.time}</span></li>
-            <li><strong className="text-white">Duration:</strong> <span className="text-white/80">{recordingToDelete.duration}</span></li>
-          </ul>
+          <p className="text-white/90 mb-4">This will permanently delete:</p>
+          <GlassTable rows={tableRows} className="mb-4" />
           <p className="text-red-400 font-medium">
             This action cannot be undone.
           </p>
@@ -315,6 +317,14 @@ function RecordingsList(): JSX.Element {
     const recordingCount = batch.recordings?.length || 0;
     const batchDate = new Date(batch.start_time).toLocaleDateString();
 
+    const batchTableRows: TableRow[] = [
+      { label: "Session", value: `Session #${batchId} from ${batchDate}` },
+      { label: "Patient", value: patient.name },
+      { label: "Recordings", value: `${recordingCount} recording${recordingCount !== 1 ? 's' : ''}` },
+      ...(batch.skin_barriers && batch.skin_barriers.length > 0 ? 
+        [{ label: "Skin Barriers", value: "Included in deletion" }] : [])
+    ];
+
     setDeleteModal({
       open: true,
       type: 'batch',
@@ -323,15 +333,8 @@ function RecordingsList(): JSX.Element {
       title: 'Delete Recording Session?',
       content: (
         <div>
-          <p className="text-white/90 mb-3">This will permanently delete:</p>
-          <ul className="ml-5 mb-4 space-y-1">
-            <li><strong className="text-white">Session #{batchId}</strong> from <span className="text-white/80">{batchDate}</span></li>
-            <li><strong className="text-white">Patient:</strong> <span className="text-white/80">{patient.name}</span></li>
-            <li><strong className="text-white">{recordingCount} recording{recordingCount !== 1 ? 's' : ''}</strong></li>
-            {batch.skin_barriers && batch.skin_barriers.length > 0 && (
-              <li><strong className="text-white">Skin barrier data</strong></li>
-            )}
-          </ul>
+          <p className="text-white/90 mb-4">This will permanently delete:</p>
+          <GlassTable rows={batchTableRows} className="mb-4" />
           <p className="text-red-400 font-medium">
             This action cannot be undone.
           </p>

@@ -4,6 +4,38 @@ import GlassCard from "./GlassCard";
 import GlassButton from "./GlassButton";
 import { ExclamationCircleOutlined, InfoCircleOutlined, WarningOutlined } from "@ant-design/icons";
 
+// Reusable glassmorphic table component for modal content
+interface TableRow {
+  label: string;
+  value: string | React.ReactNode;
+}
+
+interface GlassTableProps {
+  rows: TableRow[];
+  className?: string;
+}
+
+function GlassTable({ rows, className = "" }: GlassTableProps): JSX.Element {
+  return (
+    <div className={`glass-table ${className}`}>
+      <table className="w-full">
+        <tbody>
+          {rows.map((row, index) => (
+            <tr key={index} className="border-b border-white/10 last:border-b-0">
+              <td className="py-2 pr-4 text-white/70 font-medium text-sm w-1/3">
+                {row.label}:
+              </td>
+              <td className="py-2 text-white/90 text-sm">
+                {row.value}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 interface ConfirmationModalProps {
   open: boolean;
   onConfirm: () => Promise<void> | void;
@@ -93,3 +125,5 @@ function ConfirmationModal({
 }
 
 export default ConfirmationModal;
+export { GlassTable };
+export type { TableRow };

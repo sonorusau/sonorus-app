@@ -5,12 +5,12 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import GlassCard from "../components/GlassCard";
 import GlassButton from "../components/GlassButton";
-import ConfirmationModal from "../components/ConfirmationModal";
+import ConfirmationModal, { GlassTable, type TableRow } from "../components/ConfirmationModal";
 import Title from "antd/es/typography/Title";
 import type Patient from "../types/Patient";
 import type PatientDetails from "../types/PatientDetails";
 import type RecordingBatch from "../types/RecordingBatch";
-import { getPatients, savePatient, deletePatient, getRecordingsByPatient, getRecordingBatchesByPatient, deleteRecordingBatch } from "../utils/storage";
+import { getPatients, savePatient, deletePatient, getRecordingsByPatient, getRecordingBatchesByPatient, deleteRecordingBatch, deleteRecording } from "../utils/storage";
 import "./PatientSelect.css";
 
 interface NewPatientFormData {
@@ -39,7 +39,7 @@ function PatientList(): JSX.Element {
   const [form] = Form.useForm<NewPatientFormData>();
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
-    type: 'batch' | 'patient';
+    type: 'batch' | 'patient' | 'recording';
     id: number;
     title: string;
     content: React.ReactNode;
@@ -199,6 +199,13 @@ function PatientList(): JSX.Element {
     const recordingCount = batch.recordings?.length || 0;
     const batchDate = new Date(batch.start_time).toLocaleDateString();
 
+    const batchTableRows: TableRow[] = [
+      { label: "Session", value: `Session #${batchId} from ${batchDate}` },
+      { label: "Recordings", value: `${recordingCount} recording${recordingCount !== 1 ? 's' : ''}` },
+      ...(batch.skin_barriers && batch.skin_barriers.length > 0 ? 
+        [{ label: "Skin Barriers", value: "Included in deletion" }] : [])
+    ];
+
     setDeleteModal({
       open: true,
       type: 'batch',
@@ -206,14 +213,8 @@ function PatientList(): JSX.Element {
       title: 'Delete Recording Session?',
       content: (
         <div>
-          <p className="text-white/90 mb-3">This will permanently delete:</p>
-          <ul className="ml-5 mb-4 space-y-1">
-            <li><strong className="text-white">Session #{batchId}</strong> from <span className="text-white/80">{batchDate}</span></li>
-            <li><strong className="text-white">{recordingCount} recording{recordingCount !== 1 ? 's' : ''}</strong></li>
-            {batch.skin_barriers && batch.skin_barriers.length > 0 && (
-              <li><strong className="text-white">Skin barrier data</strong></li>
-            )}
-          </ul>
+          <p className="text-white/90 mb-4">This will permanently delete:</p>
+          <GlassTable rows={batchTableRows} className="mb-4" />
           <p className="text-red-400 font-medium">
             This action cannot be undone.
           </p>
@@ -230,6 +231,13 @@ function PatientList(): JSX.Element {
     const totalRecordings = patientBatches.reduce((total, batch) =>
       total + (batch.recordings?.length || 0), 0);
 
+    const patientTableRows: TableRow[] = [
+      { label: "Patient Name", value: patient.name },
+      { label: "Sessions", value: `${batches} recording session${batches !== 1 ? 's' : ''}` },
+      { label: "Recordings", value: `${totalRecordings} recording${totalRecordings !== 1 ? 's' : ''}` },
+      { label: "Medical Data", value: "All history and patient data" }
+    ];
+
     setDeleteModal({
       open: true,
       type: 'patient',
@@ -237,13 +245,48 @@ function PatientList(): JSX.Element {
       title: 'Delete Patient?',
       content: (
         <div>
-          <p className="text-white/90 mb-3">This will permanently delete patient:</p>
-          <ul className="ml-5 mb-4 space-y-1">
-            <li><strong className="text-white">{patient.name}</strong></li>
-            <li><strong className="text-white">{batches} recording session{batches !== 1 ? 's' : ''}</strong></li>
-            <li><strong className="text-white">{totalRecordings} recording{totalRecordings !== 1 ? 's' : ''}</strong></li>
-            <li><strong className="text-white">All medical history and patient data</strong></li>
-          </ul>
+          <p className="text-white/90 mb-4">This will permanently delete:</p>
+          <GlassTable rows={patientTableRows} className="mb-4" />
+          <p className="text-red-400 font-medium">
+            This action cannot be undone.
+          </p>
+        </div>
+      )
+    });
+  };
+
+  const handleDeleteIndividualRecording = async (recordingId: number) => {
+    // Find the recording details
+    let recordingToDelete: any = null;
+    
+    for (const batch of patientBatches) {
+      if (batch.recordings) {
+        const found = batch.recordings.find(r => r.id === recordingId);
+        if (found) {
+          recordingToDelete = found;
+          break;
+        }
+      }
+    }
+
+    if (!recordingToDelete || !selectedPatient) return;
+
+    const recordingTableRows: TableRow[] = [
+      { label: "Heart Valve", value: `${recordingToDelete.location} Valve` },
+      { label: "Patient", value: selectedPatient.name },
+      { label: "Date", value: new Date(recordingToDelete.start_time).toLocaleDateString() },
+      { label: "Duration", value: "30s recording" }
+    ];
+
+    setDeleteModal({
+      open: true,
+      type: 'recording',
+      id: recordingId,
+      title: 'Delete Recording?',
+      content: (
+        <div>
+          <p className="text-white/90 mb-4">This will permanently delete:</p>
+          <GlassTable rows={recordingTableRows} className="mb-4" />
           <p className="text-red-400 font-medium">
             This action cannot be undone.
           </p>
@@ -271,6 +314,12 @@ function PatientList(): JSX.Element {
           setPatientBatches([]);
           setExpandedBatches(new Set());
         }
+      } else if (deleteModal.type === 'recording') {
+        await deleteRecording(deleteModal.id);
+        if (selectedPatient) {
+          await handlePatientSelect(selectedPatient);
+        }
+        message.success('Recording deleted successfully');
       }
       
       setDeleteModal(null);
@@ -576,6 +625,14 @@ function PatientList(): JSX.Element {
                                       <Tooltip title="Download">
                                         <GlassButton size="sm" variant="secondary" icon={<DownloadOutlined />} />
                                       </Tooltip>
+                                      <Tooltip title="Delete Recording">
+                                        <GlassButton 
+                                          size="sm" 
+                                          variant="danger" 
+                                          icon={<DeleteOutlined />}
+                                          onClick={() => handleDeleteIndividualRecording(recording.id)}
+                                        />
+                                      </Tooltip>
                                     </div>
                                   </div>
                                 ))
@@ -714,7 +771,11 @@ function PatientList(): JSX.Element {
         title={deleteModal?.title || ''}
         content={deleteModal?.content}
         type="danger"
-        confirmText={deleteModal?.type === 'patient' ? 'Delete Patient' : 'Delete Session'}
+        confirmText={
+          deleteModal?.type === 'patient' ? 'Delete Patient' : 
+          deleteModal?.type === 'recording' ? 'Delete Recording' : 
+          'Delete Session'
+        }
         cancelText="Cancel"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
