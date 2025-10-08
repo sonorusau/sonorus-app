@@ -122,14 +122,16 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
 }
 
 /* Dark mode form improvements - glassmorphism */
-.dark-theme .ant-modal .ant-modal-content {
-  background: rgba(30, 30, 40, 0.70) !important;
-  backdrop-filter: blur(25px) !important;
-  border: none !important; /* Remove default border to prevent double border */
+/* HIGHEST PRIORITY: Ultra-specific modal transparency - Dark Mode */
+html body.dark-theme div.ant-modal div.ant-modal-content {
+  background: rgba(30, 30, 40, 0.40) !important;
+  backdrop-filter: blur(45px) !important;
+  -webkit-backdrop-filter: blur(45px) !important;
+  border: none !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
               0 0 40px rgba(172, 172, 230, 0.1) inset,
               0 2px 16px rgba(140, 125, 209, 0.2),
-              0 0 0 1px rgba(172, 172, 230, 0.3) !important; /* Use box-shadow for border */
+              0 0 0 1px rgba(172, 172, 230, 0.3) !important;
 }
 
 .dark-theme .ant-modal .ant-form-item-label > label {
@@ -167,14 +169,16 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
 }
 
 /* Light mode form styling - glassmorphism */
-.light-theme .ant-modal .ant-modal-content {
-  background: rgba(248, 250, 252, 0.75) !important;
-  backdrop-filter: blur(25px) !important;
-  border: none !important; /* Remove default border to prevent double border */
+/* HIGHEST PRIORITY: Ultra-specific modal transparency - Light Mode */
+html body.light-theme div.ant-modal div.ant-modal-content {
+  background: rgba(248, 250, 252, 0.45) !important;
+  backdrop-filter: blur(45px) !important;
+  -webkit-backdrop-filter: blur(45px) !important;
+  border: none !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 
               0 0 40px rgba(255, 255, 255, 0.3) inset,
               0 2px 16px rgba(140, 125, 209, 0.15),
-              0 0 0 1px rgba(172, 172, 230, 0.4) !important; /* Use box-shadow for border */
+              0 0 0 1px rgba(172, 172, 230, 0.4) !important;
 }
 
 .light-theme .ant-modal .ant-input {
@@ -305,15 +309,38 @@ body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
   margin: 0.5rem 0 !important;
 }
 
-/* Stronger modal transparency rules */
-.ant-modal .ant-modal-content {
-  background: rgba(30, 30, 40, 0.60) !important;
-  backdrop-filter: blur(30px) !important;
+/* ULTIMATE OVERRIDE: Maximum specificity with attribute selectors */
+
+/* Universal modal transparency - covers ALL cases */
+html[data-theme] body div[class*="ant-modal"] div[class*="ant-modal-content"],
+html body[class*="theme"] div[class*="ant-modal"] div[class*="ant-modal-content"],
+html body div[class*="ant-modal"] div[class*="ant-modal-content"] {
+  background: rgba(30, 30, 40, 0.30) !important;
+  background-color: rgba(30, 30, 40, 0.30) !important;
+  backdrop-filter: blur(60px) !important;
+  -webkit-backdrop-filter: blur(60px) !important;
+  border: none !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 
+              0 0 40px rgba(172, 172, 230, 0.1) inset,
+              0 2px 16px rgba(140, 125, 209, 0.2),
+              0 0 0 1px rgba(172, 172, 230, 0.3) !important;
 }
 
-.light-theme .ant-modal .ant-modal-content {
-  background: rgba(248, 250, 252, 0.65) !important;
-  backdrop-filter: blur(30px) !important;
+/* Light mode specific override */
+html body[class*="light"] div[class*="ant-modal"] div[class*="ant-modal-content"],
+html body.light-theme div[class*="ant-modal"] div[class*="ant-modal-content"] {
+  background: rgba(248, 250, 252, 0.35) !important;
+  background-color: rgba(248, 250, 252, 0.35) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 
+              0 0 40px rgba(255, 255, 255, 0.3) inset,
+              0 2px 16px rgba(140, 125, 209, 0.15),
+              0 0 0 1px rgba(172, 172, 230, 0.4) !important;
+}
+
+/* Fallback using style attribute level specificity simulation */
+div.ant-modal-content {
+  background: rgba(30, 30, 40, 0.30) !important;
+  backdrop-filter: blur(60px) !important;
 }
 
 /* Remove top padding from first section since no header above */
