@@ -8,6 +8,9 @@
   --glass-bg: rgba(255, 255, 255, 0.1);
   --glass-border: rgba(172, 172, 230, 0.3);
   --glass-bg-hover: rgba(255, 255, 255, 0.15);
+  
+  /* macOS traffic light avoidance offset */
+  --macos-traffic-light-offset: 32px;
 
   /* Current theme (dark by default) */
   /* =~= Theme Properties =~= */

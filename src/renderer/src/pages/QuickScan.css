@@ -29,17 +29,23 @@
   box-sizing: border-box;
 }
 
-/* Override parent layout header to stay on top when QuickScan is active */
+/* Override parent layout header to stay on top when QuickScan is active 
+   But preserve the macOS traffic light positioning */
 body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
   position: fixed !important;
   top: 0 !important;
   left: 50% !important;
-  transform: translateX(-50%) !important;
   z-index: 1000 !important;
   /* Preserve original navbar styling */
   width: 90% !important;
   margin-top: 1rem !important;
   margin-bottom: 1rem !important;
+}
+
+/* Apply the same macOS traffic light avoidance as FeaturePageLayout 
+   Move navbar to the right to avoid traffic lights (uses CSS variable for DRY) */
+body:has(.quick-scan-container) .flex.flex-col.h-full > div:first-child {
+  transform: translateX(calc(-50% + var(--macos-traffic-light-offset))) !important;
 }
 
 /* Fixed Patient Information Panel - Right Side */
