@@ -28,16 +28,11 @@ function FeaturePageLayout(): JSX.Element {
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center">
-              <div
-                className="bg-white/5 backdrop-blur-md rounded-2xl"
-                style={{}}
-              >
-                <img
-                  src={image}
-                  alt="Sonorus Logo"
-                  className="h-8 w-auto mx-auto"
-                />
-              </div>
+              <img
+                src={image}
+                alt="Sonorus Logo"
+                className="h-8 w-auto mx-auto"
+              />
             </div>
           </div>
           <div className="ml-auto no-drag">

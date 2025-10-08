@@ -5,9 +5,9 @@ import GlassButton from "./GlassButton";
 function BackButton(): JSX.Element {
   const navigate = useNavigate();
   return (
-    <GlassButton 
-      onClick={() => navigate(-1)} 
-      variant="secondary" 
+    <GlassButton
+      onClick={() => navigate(-1)}
+      variant="secondary"
       size="sm"
       icon={<ArrowLeftOutlined />}
     >

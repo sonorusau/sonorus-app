@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Progress, Alert } from "antd";
-import { 
-  WifiOutlined, 
-  CheckCircleOutlined, 
+import {
+  WifiOutlined,
+  CheckCircleOutlined,
   ExclamationCircleOutlined,
   ReloadOutlined,
   HeartOutlined
@@ -34,7 +34,7 @@ function PairDevice(): JSX.Element {
       signalStrength: 95
     },
     {
-      id: "steth-002", 
+      id: "steth-002",
       name: "Sonorus Stethoscope SN-002",
       status: "disconnected",
       batteryLevel: 42,
@@ -53,7 +53,7 @@ function PairDevice(): JSX.Element {
   const startScanning = async () => {
     setIsScanning(true);
     setDevices([]);
-    
+
     setTimeout(() => {
       setDevices(mockDevices);
       setIsScanning(false);
@@ -63,8 +63,8 @@ function PairDevice(): JSX.Element {
   const connectToDevice = async (device: Device) => {
     setConnectionProgress(0);
     const updatedDevice = { ...device, status: "connecting" as const };
-    
-    setDevices(prev => prev.map(d => 
+
+    setDevices(prev => prev.map(d =>
       d.id === device.id ? updatedDevice : d
     ));
 
@@ -75,7 +75,7 @@ function PairDevice(): JSX.Element {
           const connectedDev = { ...device, status: "connected" as const };
           setConnectedDevice(connectedDev);
           localStorage.setItem("connectedDevice", JSON.stringify(connectedDev));
-          setDevices(prev => prev.map(d => 
+          setDevices(prev => prev.map(d =>
             d.id === device.id ? connectedDev : d
           ));
           return 100;
@@ -88,7 +88,7 @@ function PairDevice(): JSX.Element {
   const disconnectDevice = () => {
     setConnectedDevice(null);
     localStorage.removeItem("connectedDevice");
-    setDevices(prev => prev.map(d => 
+    setDevices(prev => prev.map(d =>
       d.status === "connected" ? { ...d, status: "disconnected" as const } : d
     ));
   };
@@ -127,7 +127,7 @@ function PairDevice(): JSX.Element {
             <h3 className="text-xl font-semibold text-white mb-2">
               Device Status
             </h3>
-            
+
             {connectedDevice ? (
               <Alert
                 message="Device Connected"
@@ -173,7 +173,7 @@ function PairDevice(): JSX.Element {
                     <span className="text-white text-sm">{connectedDevice.batteryLevel}%</span>
                   </div>
                 </div>
-                
+
                 <div className="flex justify-between items-center p-3 bg-white/10 rounded-lg">
                   <span className="text-white/70">Signal</span>
                   <div className="flex items-center gap-2">
@@ -232,8 +232,8 @@ function PairDevice(): JSX.Element {
             {isScanning && (
               <div className="text-center py-8">
                 <div className="mb-4">
-                  <WifiOutlined 
-                    className="text-4xl text-white/60 animate-pulse" 
+                  <WifiOutlined
+                    className="text-4xl text-white/60 animate-pulse"
                   />
                 </div>
                 <p className="text-white/70">Scanning for devices...</p>
@@ -257,7 +257,7 @@ function PairDevice(): JSX.Element {
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-white font-medium">{device.name}</h4>
                     <span className={`px-2 py-1 rounded text-xs ${
-                      device.status === "connected" 
+                      device.status === "connected"
                         ? "bg-green-500/20 text-green-300"
                         : device.status === "connecting"
                         ? "bg-blue-500/20 text-blue-300"

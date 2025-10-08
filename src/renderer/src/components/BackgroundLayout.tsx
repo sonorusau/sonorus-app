@@ -15,15 +15,19 @@ function BackgroundLayout({ children }: BackgroundLayoutProps): JSX.Element {
     <>
       {/* Full screen background - ensure complete coverage */}
       <div
-        className="fixed inset-0 w-full h-full z-0"
+        className="fixed inset-0 w-screen h-screen z-0"
         style={{
           backgroundImage: isDarkMode ? `url(${background})` : 'none',
-          backgroundColor: isDarkMode ? 'transparent' : '#ffffff',
+          backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "center center",
           backgroundRepeat: "no-repeat",
           margin: 0,
           padding: 0,
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
         }}
       />
 
@@ -31,7 +35,7 @@ function BackgroundLayout({ children }: BackgroundLayoutProps): JSX.Element {
       <div
         className={`fixed inset-0 w-full h-full z-10 ${
           isDarkMode
-            ? 'bg-gradient-to-br from-white/8 via-purple-300/10 to-indigo-200/8'
+            ? 'bg-gradient-to-br from-white/3 via-purple-300/4 to-indigo-200/3'
             : 'bg-transparent'
         }`}
         style={{ margin: 0, padding: 0 }}

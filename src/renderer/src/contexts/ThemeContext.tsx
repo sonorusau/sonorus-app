@@ -37,7 +37,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // Function to apply theme
   const applyTheme = (mode: ThemeMode) => {
     let shouldBeDark: boolean;
-    
+
     switch (mode) {
       case 'dark':
         shouldBeDark = true;
@@ -51,7 +51,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       default:
         shouldBeDark = true;
     }
-    
+
     setIsDarkMode(shouldBeDark);
     document.documentElement.className = shouldBeDark ? 'dark-theme' : 'light-theme';
     document.body.className = shouldBeDark ? 'dark-theme' : 'light-theme';
@@ -79,7 +79,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           applyTheme('system');
         }
       };
-      
+
       mediaQuery.addListener(handleChange);
       return () => mediaQuery.removeListener(handleChange);
     }

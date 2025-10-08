@@ -321,7 +321,7 @@ function RecordingsList(): JSX.Element {
       { label: "Session", value: `Session #${batchId} from ${batchDate}` },
       { label: "Patient", value: patient.name },
       { label: "Recordings", value: `${recordingCount} recording${recordingCount !== 1 ? 's' : ''}` },
-      ...(batch.skin_barriers && batch.skin_barriers.length > 0 ? 
+      ...(batch.skin_barriers && batch.skin_barriers.length > 0 ?
         [{ label: "Skin Barriers", value: "Included in deletion" }] : [])
     ];
 
@@ -382,7 +382,7 @@ function RecordingsList(): JSX.Element {
       } else if (deleteModal.type === 'batch') {
         await deleteRecordingBatch(deleteModal.id);
       }
-      
+
       await loadRecordings(); // Reload the data
       setDeleteModal(null);
     } catch (error) {

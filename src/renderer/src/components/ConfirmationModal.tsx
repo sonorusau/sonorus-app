@@ -101,7 +101,7 @@ function ConfirmationModal({
               <div className="text-white/90">{content}</div>
             </div>
           </div>
-          
+
           <div className="flex justify-end gap-3 mt-6">
             <GlassButton
               variant="secondary"

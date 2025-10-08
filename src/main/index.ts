@@ -25,7 +25,7 @@ function createWindow(): void {
     ...(process.platform === "darwin"
       ? {
           titleBarStyle: "hiddenInset",
-          trafficLightPosition: { x: 20, y: 20 },
+          trafficLightPosition: { x: 20, y: 15 },
         }
       : {}),
     ...(process.platform === "linux" ? { icon } : {}),

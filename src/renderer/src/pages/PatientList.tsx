@@ -202,7 +202,7 @@ function PatientList(): JSX.Element {
     const batchTableRows: TableRow[] = [
       { label: "Session", value: `Session #${batchId} from ${batchDate}` },
       { label: "Recordings", value: `${recordingCount} recording${recordingCount !== 1 ? 's' : ''}` },
-      ...(batch.skin_barriers && batch.skin_barriers.length > 0 ? 
+      ...(batch.skin_barriers && batch.skin_barriers.length > 0 ?
         [{ label: "Skin Barriers", value: "Included in deletion" }] : [])
     ];
 
@@ -258,7 +258,7 @@ function PatientList(): JSX.Element {
   const handleDeleteIndividualRecording = async (recordingId: number) => {
     // Find the recording details
     let recordingToDelete: any = null;
-    
+
     for (const batch of patientBatches) {
       if (batch.recordings) {
         const found = batch.recordings.find(r => r.id === recordingId);
@@ -321,7 +321,7 @@ function PatientList(): JSX.Element {
         }
         message.success('Recording deleted successfully');
       }
-      
+
       setDeleteModal(null);
     } catch (error) {
       console.error('Error deleting:', error);
@@ -626,9 +626,9 @@ function PatientList(): JSX.Element {
                                         <GlassButton size="sm" variant="secondary" icon={<DownloadOutlined />} />
                                       </Tooltip>
                                       <Tooltip title="Delete Recording">
-                                        <GlassButton 
-                                          size="sm" 
-                                          variant="danger" 
+                                        <GlassButton
+                                          size="sm"
+                                          variant="danger"
                                           icon={<DeleteOutlined />}
                                           onClick={() => handleDeleteIndividualRecording(recording.id)}
                                         />
@@ -772,8 +772,8 @@ function PatientList(): JSX.Element {
         content={deleteModal?.content}
         type="danger"
         confirmText={
-          deleteModal?.type === 'patient' ? 'Delete Patient' : 
-          deleteModal?.type === 'recording' ? 'Delete Recording' : 
+          deleteModal?.type === 'patient' ? 'Delete Patient' :
+          deleteModal?.type === 'recording' ? 'Delete Recording' :
           'Delete Session'
         }
         cancelText="Cancel"

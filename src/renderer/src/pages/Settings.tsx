@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Switch, Select, Slider, Input, Divider, notification } from "antd";
 import { useTheme } from "../contexts/ThemeContext";
-import { 
+import {
   SettingOutlined,
   WifiOutlined,
   SoundOutlined,
@@ -25,27 +25,27 @@ interface SettingsData {
   deviceTimeout: number;
   audioFeedback: boolean;
   volumeLevel: number;
-  
+
   // Recording Settings
   defaultRecordingLength: number;
   autoSaveRecordings: boolean;
   compressionLevel: string;
-  
+
   // Analysis Settings
   analysisMode: string;
   confidenceThreshold: number;
   enableRealTimeAnalysis: boolean;
-  
+
   // Data & Privacy
   dataRetention: number;
   exportFormat: string;
   anonymizeData: boolean;
-  
+
   // Notifications
   enableNotifications: boolean;
   flaggedResultsAlert: boolean;
   deviceDisconnectAlert: boolean;
-  
+
   // Advanced
   debugMode: boolean;
   logLevel: string;
@@ -61,27 +61,27 @@ function Settings(): JSX.Element {
     deviceTimeout: 30,
     audioFeedback: true,
     volumeLevel: 75,
-    
-    // Recording Settings  
+
+    // Recording Settings
     defaultRecordingLength: 30,
     autoSaveRecordings: true,
     compressionLevel: "medium",
-    
+
     // Analysis Settings
     analysisMode: "standard",
     confidenceThreshold: 85,
     enableRealTimeAnalysis: false,
-    
+
     // Data & Privacy
     dataRetention: 365,
     exportFormat: "json",
     anonymizeData: true,
-    
+
     // Notifications
     enableNotifications: true,
     flaggedResultsAlert: true,
     deviceDisconnectAlert: true,
-    
+
     // Advanced
     debugMode: false,
     logLevel: "info",

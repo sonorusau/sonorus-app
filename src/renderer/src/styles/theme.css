@@ -291,8 +291,17 @@
   color: rgb(15, 23, 42) !important;
 }
 
-/* Ensure dark theme text stays white */
-.dark-theme * {
+/* Dark theme text - selective overrides to preserve brand colors */
+.dark-theme h1,
+.dark-theme h2,
+.dark-theme h3,
+.dark-theme h4,
+.dark-theme h5,
+.dark-theme h6,
+.dark-theme p,
+.dark-theme span:not([style*="color"]),
+.dark-theme label,
+.dark-theme .text-white {
   color: white !important;
 }
 
@@ -351,6 +360,68 @@
 .dark-theme .ant-tooltip-arrow::before {
   background-color: rgba(255, 255, 255, 0.9) !important;
   border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dark theme form inputs - Settings page text fix */
+.dark-theme .ant-input,
+.dark-theme textarea.ant-input {
+  color: white !important;
+}
+
+.dark-theme .ant-input::placeholder,
+.dark-theme textarea.ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Remove ugly webkit autofill styles */
+.dark-theme .ant-input:-webkit-autofill,
+.dark-theme .ant-input:-webkit-autofill:hover,
+.dark-theme .ant-input:-webkit-autofill:focus,
+.dark-theme .ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.08) inset !important;
+  -webkit-text-fill-color: white !important;
+  caret-color: white !important;
+}
+
+/* Fix search input white middle issue - force override */
+.dark-theme .search-input,
+.dark-theme .ant-input-search,
+.dark-theme .ant-input-search-large,
+.dark-theme .ant-input-search .ant-input-group {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(172, 172, 230, 0.3) !important;
+}
+
+.dark-theme .search-input:hover,
+.dark-theme .ant-input-search:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(140, 125, 209, 0.6) !important;
+}
+
+.dark-theme .search-input:focus-within,
+.dark-theme .ant-input-search:focus-within {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(140, 125, 209, 0.6) !important;
+  box-shadow: 0 0 0 1px rgba(140, 125, 209, 0.2) !important;
+}
+
+.dark-theme .search-input .ant-input,
+.dark-theme .search-input .ant-input:focus,
+.dark-theme .search-input .ant-input:hover,
+.dark-theme .ant-input-search .ant-input,
+.dark-theme .ant-input-search .ant-input:focus,
+.dark-theme .ant-input-search .ant-input:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: white !important;
+}
+
+/* Override all input backgrounds in dark mode */
+.dark-theme input[type="text"],
+.dark-theme input[type="search"] {
+  background: transparent !important;
+  color: white !important;
 }
 
 /* Apply theme variables to common elements */
