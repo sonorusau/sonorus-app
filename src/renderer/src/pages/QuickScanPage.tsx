@@ -599,7 +599,7 @@ function QuickScanPage(): JSX.Element {
         {selectedPatient && selectedPatient.name !== "Quick Scan Session" && (isValidHeartLocation(selectedHeartArea) || skinBarriers.length > 0) && (
           <section className="recording-context-panel">
             <GlassCard padding="sm" className="w-full">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-3">
                 {isValidHeartLocation(selectedHeartArea) && (
                   <div className="flex items-center justify-between">
                     <span className="text-white/70 text-sm">Recording:</span>
@@ -612,9 +612,9 @@ function QuickScanPage(): JSX.Element {
                   </div>
                 )}
                 {skinBarriers.length > 0 && (
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-1">
                     <span className="text-white/70 text-sm">Barriers:</span>
-                    <div className="flex flex-col items-end gap-1">
+                    <div>
                       <table className="barriers-table">
                         <tbody>
                           {skinBarriers.map((barrier, index) => (
@@ -637,7 +637,7 @@ function QuickScanPage(): JSX.Element {
         {(!selectedPatient || selectedPatient.name === "Quick Scan Session") && (isValidHeartLocation(selectedHeartArea) || skinBarriers.length > 0) && (
           <section className="recording-context-panel--anonymous">
             <GlassCard padding="sm" className="w-full">
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-3">
                 {isValidHeartLocation(selectedHeartArea) && (
                   <div className="flex items-center justify-between">
                     <span className="text-white/70 text-sm">Recording:</span>
@@ -650,9 +650,9 @@ function QuickScanPage(): JSX.Element {
                   </div>
                 )}
                 {skinBarriers.length > 0 && (
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-1">
                     <span className="text-white/70 text-sm">Barriers:</span>
-                    <div className="flex flex-col items-end gap-1">
+                    <div>
                       <table className="barriers-table">
                         <tbody>
                           {skinBarriers.map((barrier, index) => (
