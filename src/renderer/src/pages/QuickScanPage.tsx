@@ -601,23 +601,25 @@ function QuickScanPage(): JSX.Element {
             <GlassCard padding="sm" className="w-full">
               <div className="flex flex-col gap-3">
                 {isValidHeartLocation(selectedHeartArea) && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/70 text-sm">Recording:</span>
-                    <div className="flex flex-col items-end">
-                      <div className="flex items-center gap-2">
-                        {isRecording && (
-                          <HeartOutlined className="animate-heartbeat" />
-                        )}
-                        <span className="text-white text-sm">{heartAreas.find(area => area.key === selectedHeartArea)?.label}</span>
-                      </div>
+                  <div className={`p-2 rounded-lg transition-all duration-300 ${
+                    completedRecordings[selectedHeartArea] ? 'recording-completed' : ''
+                  }`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white/70 text-sm">Recording:</span>
                       {completedRecordings[selectedHeartArea] && (
                         <span className="text-green-400 text-xs">✓ Completed</span>
                       )}
                     </div>
+                    <div className="flex items-center gap-2 min-h-[20px]">
+                      {isRecording && (
+                        <HeartOutlined className="animate-heartbeat flex-shrink-0" />
+                      )}
+                      <span className="text-white text-sm leading-tight">{heartAreas.find(area => area.key === selectedHeartArea)?.label}</span>
+                    </div>
                   </div>
                 )}
                 {skinBarriers.length > 0 && (
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 p-2 rounded-lg">
                     <span className="text-white/70 text-sm">Barriers:</span>
                     <div>
                       <table className="barriers-table">
@@ -644,23 +646,25 @@ function QuickScanPage(): JSX.Element {
             <GlassCard padding="sm" className="w-full">
               <div className="flex flex-col gap-3">
                 {isValidHeartLocation(selectedHeartArea) && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/70 text-sm">Recording:</span>
-                    <div className="flex flex-col items-end">
-                      <div className="flex items-center gap-2">
-                        {isRecording && (
-                          <HeartOutlined className="animate-heartbeat" />
-                        )}
-                        <span className="text-white text-sm">{heartAreas.find(area => area.key === selectedHeartArea)?.label}</span>
-                      </div>
+                  <div className={`p-2 rounded-lg transition-all duration-300 ${
+                    completedRecordings[selectedHeartArea] ? 'recording-completed' : ''
+                  }`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white/70 text-sm">Recording:</span>
                       {completedRecordings[selectedHeartArea] && (
                         <span className="text-green-400 text-xs">✓ Completed</span>
                       )}
                     </div>
+                    <div className="flex items-center gap-2 min-h-[20px]">
+                      {isRecording && (
+                        <HeartOutlined className="animate-heartbeat flex-shrink-0" />
+                      )}
+                      <span className="text-white text-sm leading-tight">{heartAreas.find(area => area.key === selectedHeartArea)?.label}</span>
+                    </div>
                   </div>
                 )}
                 {skinBarriers.length > 0 && (
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 p-2 rounded-lg">
                     <span className="text-white/70 text-sm">Barriers:</span>
                     <div>
                       <table className="barriers-table">
@@ -977,11 +981,11 @@ function QuickScanPage(): JSX.Element {
       {/* Section 3: Recording Controls */}
       <section id="section-2" className="snap-section section-3">
         <GlassCard padding="lg" className="w-full max-w-3xl">
-          <div className="text-center mb-6">
-            <Title level={2} style={{ color: "white", margin: 0 }}>
+          <div className="text-center mb-4">
+            <Title level={3} style={{ color: "white", margin: 0 }}>
               Record Heart Sounds
             </Title>
-            <p className="text-white/70 text-lg mt-2">
+            <p className="text-white/70 text-sm mt-1">
               {selectedHeartArea
                 ? `${heartAreas.find((area) => area.key === selectedHeartArea)?.label}`
                 : "Ready to record when you select a heart area"}
@@ -1002,13 +1006,13 @@ function QuickScanPage(): JSX.Element {
           )}
 
           {/* Recording Visualizer and Timer */}
-          <div className="flex flex-col items-center mb-8">
-            <div className="recording-visualizer mb-6">
+          <div className="flex flex-col items-center mb-4">
+            <div className="recording-visualizer mb-3">
               <div
                 className="audio-waveform-container"
                 style={{
-                  minHeight: "180px",
-                  width: "520px",
+                  minHeight: "120px",
+                  width: "400px",
                 }}
               >
                 <AudioWaveform isActive={isRecording} analyser={analyser} />
@@ -1031,24 +1035,26 @@ function QuickScanPage(): JSX.Element {
               )}
             </div>
 
-            <div className="recording-timer text-center mb-6">
-              <span className="text-4xl font-mono text-white">
-                {formatTime(recordingTime)}
-              </span>
-              <p className="text-white/60 text-lg mt-2">
-                {isRecording ? "Recording..." : "Ready to record"}
-              </p>
+            <div className="recording-timer text-center mb-3">
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-2xl font-mono text-white">
+                  {formatTime(recordingTime)}
+                </span>
+                <span className="text-white/60 text-sm">
+                  {isRecording ? "Recording..." : "Ready to record"}
+                </span>
+              </div>
             </div>
 
             {recordingTime > 0 && (
-              <div className="w-full max-w-md">
+              <div className="w-full max-w-sm">
                 <Progress
                   percent={(recordingTime / 30000) * 100}
                   showInfo={false}
                   strokeColor="#8C7DD1"
                   trailColor="rgba(255,255,255,0.2)"
                 />
-                <p className="text-white/60 text-center mt-2">
+                <p className="text-white/60 text-center mt-1 text-xs">
                   {Math.max(0, Math.ceil((30000 - recordingTime) / 1000))} seconds remaining
                 </p>
               </div>
@@ -1056,30 +1062,28 @@ function QuickScanPage(): JSX.Element {
           </div>
 
           {/* Recording Controls */}
-          <div className="recording-controls text-center mb-8">
+          <div className="recording-controls text-center mb-4">
             {!isRecording && !analysisComplete && (
               <div>
                 {isValidHeartLocation(selectedHeartArea) && completedRecordings[selectedHeartArea] ? (
                   // Show redo options for completed areas
-                  <div className="space-y-3">
-                    <p className="text-green-400 text-lg mb-4">
+                  <div className="space-y-2">
+                    <p className="text-green-400 text-base mb-2">
                       ✓ {heartAreas.find(area => area.key === selectedHeartArea)?.label} recording complete
                     </p>
-                    <div className="flex justify-center gap-3">
+                    <div className="flex justify-center gap-2">
                       <GlassButton
                         variant="secondary"
-                        size="lg"
+                        size="md"
                         onClick={() => handleRedoRecording(selectedHeartArea)}
-                        className="mb-4"
                       >
                         Redo Recording
                       </GlassButton>
                       {Object.values(completedRecordings).filter(Boolean).length < 4 && (
                         <GlassButton
                           variant="primary"
-                          size="lg"
+                          size="md"
                           onClick={() => scrollToSection(1)}
-                          className="mb-4"
                         >
                           Record Other Areas
                         </GlassButton>
@@ -1090,11 +1094,10 @@ function QuickScanPage(): JSX.Element {
                   // Show normal recording button for incomplete areas
                   <GlassButton
                     variant="primary"
-                    size="lg"
+                    size="md"
                     icon={<PlayCircleOutlined />}
                     onClick={handleStartRecording}
                     disabled={!isValidHeartLocation(selectedHeartArea)}
-                    className="mb-4"
                   >
                     {isValidHeartLocation(selectedHeartArea)
                       ? "Start Recording"
@@ -1107,10 +1110,9 @@ function QuickScanPage(): JSX.Element {
             {isRecording && (
               <GlassButton
                 variant="danger"
-                size="lg"
+                size="md"
                 icon={<StopOutlined />}
                 onClick={handleStopRecording}
-                className="mb-4"
               >
                 Stop Recording
               </GlassButton>
@@ -1118,15 +1120,14 @@ function QuickScanPage(): JSX.Element {
 
             {Object.values(completedRecordings).filter(Boolean).length === 4 &&
               !analysisComplete && (
-                <div className="mb-4">
-                  <p className="text-green-400 text-lg mb-4">
+                <div className="mb-2">
+                  <p className="text-green-400 text-base mb-2">
                     ✓ All 4 areas recorded!
                   </p>
                   <GlassButton
                     variant="success"
-                    size="lg"
+                    size="md"
                     onClick={() => setCurrentStep(WorkflowSteps.Record)}
-                    className="mb-4"
                   >
                     Start Comprehensive Analysis
                   </GlassButton>
@@ -1172,7 +1173,7 @@ function QuickScanPage(): JSX.Element {
                 </div>
                 <GlassButton
                   variant="secondary"
-                  size="lg"
+                  size="md"
                   onClick={handleReset}
                 >
                   Start New Recording Session
@@ -1181,42 +1182,6 @@ function QuickScanPage(): JSX.Element {
             )}
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex justify-center gap-4">
-            {/* <GlassButton
-              variant="secondary"
-              size="lg"
-              onClick={() => scrollToSection(1)}
-            >
-              Back: Heart Location
-            </GlassButton> */}
-            {/* <p>{completedRecordings}</p> */}
-            {/* {completedRecordings.map((recording, isCompleted) => (
-              <div>yo</div>
-            ))} */}
-            {/* skinBarriers.map((barrier, index) => ( */}
-            {isValidHeartLocation(selectedHeartArea) && completedRecordings[selectedHeartArea] &&
-              !Object.values(completedRecordings).every(Boolean) && (
-                <GlassButton
-                  variant="primary"
-                  size="lg"
-                  onClick={() => scrollToSection(1)}
-                >
-                  Next: Choose another heart location
-                </GlassButton>
-              )}
-
-            {isValidHeartLocation(selectedHeartArea) && !completedRecordings[selectedHeartArea] &&
-              !Object.values(completedRecordings).every(Boolean) && (
-                <GlassButton
-                  variant="secondary"
-                  size="lg"
-                  onClick={() => scrollToSection(1)}
-                >
-                  Back: Choose another heart location
-                </GlassButton>
-              )}
-          </div>
         </GlassCard>
       </section>
     </div>

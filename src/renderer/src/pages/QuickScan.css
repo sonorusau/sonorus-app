@@ -667,19 +667,40 @@ div.ant-modal-content {
     color: #ef4444;
   }
   50% { 
-    transform: scale(1.2);
+    transform: scale(1.1);
     color: #dc2626;
   }
 }
 
 .animate-heartbeat {
   animation: heartbeat 1s ease-in-out infinite;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Lock scroll during recording */
 .quick-scan-container.recording-active {
   scroll-snap-type: none !important;
   overflow-y: hidden !important;
+}
+
+/* Completed recording background styling */
+.recording-completed {
+  background: rgba(16, 185, 129, 0.15) !important; /* Green with 15% opacity */
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important; /* Subtle green border */
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.1) inset !important;
+}
+
+/* Light mode completed recording styling */
+.light-theme .recording-completed {
+  background: rgba(34, 197, 94, 0.08) !important; /* Lighter green for light mode */
+  border: 1px solid rgba(34, 197, 94, 0.25) !important;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1), 0 0 20px rgba(34, 197, 94, 0.05) inset !important;
 }
 
 .result-item {
