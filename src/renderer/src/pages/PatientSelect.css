@@ -180,11 +180,13 @@
 }
 
 /* Ensure proper centering for recording session cards */
-.recordings-list.max-w-4xl {
+.recordings-list.max-w-4xl,
+.recordings-list-container .space-y-6.mb-16 {
   max-width: 56rem; /* 4xl = 56rem */
   margin-left: auto;
   margin-right: auto;
 }
+
 
 .recording-card {
   background: rgba(255, 255, 255, 0.08);
@@ -435,6 +437,14 @@
   color: rgba(255, 255, 255, 0.6) !important;
 }
 
+/* Individual recording cards centering - works for both PatientList and RecordingsList */
+.recordings-list .glass-card.max-w-2xl,
+.recordings-list-container .glass-card {
+  max-width: 32rem; /* 2xl = 32rem */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .add-recording-btn {
   background: rgba(255, 255, 255, 0.2) !important;
   border: 1px solid #ACACE6 !important;
@@ -467,5 +477,17 @@
   .recordings-list.max-w-4xl {
     max-width: 100%;
     padding: 0 1rem;
+  }
+
+  /* Individual recording cards responsive design */
+  .recordings-list .glass-card.max-w-2xl,
+  .recordings-list-container .glass-card {
+    max-width: 100%;
+    margin: 0;
+  }
+
+  /* Reduce indentation on mobile */
+  .recordings-list .ml-6 {
+    margin-left: 1rem; /* Reduced from 1.5rem to 1rem */
   }
 }

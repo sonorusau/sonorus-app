@@ -823,37 +823,42 @@ function PatientList(): JSX.Element {
 
                           {/* Individual Recordings */}
                           {isBatchExpanded && (
-                            <div className="ml-8 space-y-2">
+                            <div className="ml-6 space-y-2 flex flex-col items-center">
                               {batch.recordings &&
                               batch.recordings.length > 0 ? (
                                 batch.recordings.map((recording) => (
-                                  <div
+                                  <GlassCard
                                     key={recording.id}
-                                    className="recording-card bg-white/5"
+                                    padding="sm"
+                                    className="w-[90%]"
                                   >
-                                    <div className="recording-info">
-                                      <div className="recording-header">
-                                        <div className="recording-type">
-                                          {recording.location} Valve
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <h5 className="text-white font-medium">
+                                            {recording.location} Valve
+                                          </h5>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-white/70">
+                                              {new Date(
+                                                recording.start_time,
+                                              ).toLocaleDateString()}{" "}
+                                              at{" "}
+                                              {new Date(
+                                                recording.start_time,
+                                              ).toLocaleTimeString()}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-white/70">
+                                              30s recording
+                                            </span>
+                                          </div>
                                         </div>
                                       </div>
-                                      <div className="recording-details">
-                                        <span className="recording-date">
-                                          {new Date(
-                                            recording.start_time,
-                                          ).toLocaleDateString()}{" "}
-                                          at{" "}
-                                          {new Date(
-                                            recording.start_time,
-                                          ).toLocaleTimeString()}
-                                        </span>
-                                        <span className="mx-2">•</span>
-                                        <span className="text-white/70">
-                                          30s recording
-                                        </span>
-                                      </div>
-                                    </div>
-                                    <div className="recording-actions flex items-center gap-2">
+                                      <div className="recording-actions flex items-center gap-2 ml-4">
                                       <Tooltip
                                         title={
                                           playingRecordings.has(recording.id)
@@ -906,7 +911,8 @@ function PatientList(): JSX.Element {
                                         />
                                       </Tooltip>
                                     </div>
-                                  </div>
+                                    </div>
+                                  </GlassCard>
                                 ))
                               ) : (
                                 <div className="text-center text-white/50 py-4 text-sm">

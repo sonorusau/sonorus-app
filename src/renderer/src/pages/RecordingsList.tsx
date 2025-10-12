@@ -730,7 +730,7 @@ function RecordingsList(): JSX.Element {
 
                   {/* Patient's Recording Batches */}
                   {isPatientExpanded && (
-                    <div className="ml-6 space-y-3">
+                    <div className="space-y-3 flex flex-col items-center">
                       {patientBatches.map((batch) => {
                         const isBatchExpanded = expandedBatches.has(batch.id);
                         const batchRecordings =
@@ -739,7 +739,7 @@ function RecordingsList(): JSX.Element {
                         const statusColor = getBatchStatusColor(batch);
 
                         return (
-                          <div key={batch.id} className="space-y-2">
+                          <div key={batch.id} className="space-y-2 w-[90%]">
                             {/* Batch Header */}
                             <GlassCard
                               padding="md"
@@ -880,7 +880,7 @@ function RecordingsList(): JSX.Element {
                             {isBatchExpanded && (
                               <div className="ml-6 space-y-2">
                                 {batchRecordings.map((recording) => (
-                                  <GlassCard key={recording.id} padding="sm">
+                                  <GlassCard key={recording.id}>
                                     <div className="flex items-center justify-between">
                                       <div className="flex-1">
                                         <div className="flex items-center justify-between mb-2">
