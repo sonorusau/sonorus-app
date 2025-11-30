@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Input, Button, Modal, Form, DatePicker, message, Tooltip, Slider } from "antd";
 import {
   SearchOutlined,
@@ -20,6 +20,7 @@ import ConfirmationModal, {
   type TableRow,
 } from "../components/ConfirmationModal";
 import AudioWaveform from "../components/AudioWaveform";
+import useAudioPlayback from "../hooks/useAudioPlayback";
 import Title from "antd/es/typography/Title";
 import type Patient from "../types/Patient";
 import type PatientDetails from "../types/PatientDetails";
@@ -67,38 +68,21 @@ function PatientList(): JSX.Element {
     title: string;
     content: React.ReactNode;
   } | null>(null);
-  const [playingRecordings, setPlayingRecordings] = useState<Set<number>>(
-    new Set(),
-  );
-  const [pausedRecordings, setPausedRecordings] = useState<Set<number>>(
-    new Set(),
-  );
-  const [audioInstances, setAudioInstances] = useState<Map<number, HTMLAudioElement>>(
-    new Map(),
-  );
-  const [audioAnalysers, setAudioAnalysers] = useState<Map<number, AnalyserNode>>(
-    new Map(),
-  );
-  const [audioContexts, setAudioContexts] = useState<Map<number, AudioContext>>(
-    new Map(),
-  );
-  const [recordingProgress, setRecordingProgress] = useState<Map<number, { current: number; duration: number }>>(
-    new Map(),
-  );
-  const progressIntervalRef = useRef<Map<number, NodeJS.Timeout>>(new Map());
+  const {
+    playingRecordings,
+    pausedRecordings,
+    audioAnalysers,
+    recordingProgress,
+    playRecording,
+    pauseRecording,
+    resumeRecording,
+    stopRecording,
+    seekRecording,
+    togglePlayPause,
+  } = useAudioPlayback();
 
   useEffect(() => {
     loadPatients();
-  }, []);
-
-  // Cleanup intervals on unmount
-  useEffect(() => {
-    return () => {
-      progressIntervalRef.current.forEach((interval) => {
-        clearInterval(interval);
-      });
-      progressIntervalRef.current.clear();
-    };
   }, []);
 
   const loadPatients = async () => {
@@ -423,420 +407,20 @@ function PatientList(): JSX.Element {
   };
 
   const handleStopRecording = (recordingId: number) => {
-    try {
-      // Get the audio instance for this recording
-      const audio = audioInstances.get(recordingId);
-      const audioContext = audioContexts.get(recordingId);
-
-      if (audio) {
-        // Pause the audio
-        audio.pause();
-
-        // Reset to beginning for next playback
-        audio.currentTime = 0;
-
-        // Clean up progress interval
-        const interval = progressIntervalRef.current.get(recordingId);
-        if (interval) {
-          clearInterval(interval);
-          progressIntervalRef.current.delete(recordingId);
-        }
-
-        // Clean up the audio object
-        const url = audio.src;
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-
-        // Remove event listeners to prevent memory leaks
-        // Note: Event listeners are automatically cleaned up when audio element is removed
-      }
-
-      // Clean up AudioContext
-      if (audioContext && audioContext.state !== 'closed') {
-        audioContext.close().catch(console.error);
-      }
-
-      // Update state - remove from playing set and audio instances
-      setPlayingRecordings(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(recordingId);
-        return newSet;
-      });
-
-      setPausedRecordings(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(recordingId);
-        return newSet;
-      });
-
-      setAudioInstances(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(recordingId);
-        return newMap;
-      });
-
-      setAudioAnalysers(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(recordingId);
-        return newMap;
-      });
-
-      setAudioContexts(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(recordingId);
-        return newMap;
-      });
-
-      setRecordingProgress(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(recordingId);
-        return newMap;
-      });
-
-      console.log(`Stopped recording playback: ${recordingId}`);
-      message.success("Recording stopped");
-
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-      message.error("Failed to stop recording");
-    }
-  };
-
-  const handlePlayRecording = async (recording: any) => {
-    // Check if already playing
-    if (playingRecordings.has(recording.id)) {
-      return;
-    }
-
-    console.log("Playing recording:", {
-      id: recording.id,
-      hasAudio: !!recording.audio,
-      audioType: recording.audio?.constructor?.name,
-      audioSize: recording.audio?.size,
-    });
-
-    if (!recording.audio) {
-      console.error("No audio data found for recording:", recording.id);
-      message.error("No audio data available for this recording.");
-      return;
-    }
-
-    if (!(recording.audio instanceof Blob)) {
-      console.error("Audio data is not a Blob:", typeof recording.audio);
-      message.error("Audio data format is invalid.");
-      return;
-    }
-
-    if (recording.audio.size === 0) {
-      console.error("Audio blob is empty for recording:", recording.id);
-      message.error("Audio recording is empty.");
-      return;
-    }
-
-    try {
-      // Add to playing set
-      setPlayingRecordings((prev) => new Set(prev).add(recording.id));
-
-      const url = URL.createObjectURL(recording.audio);
-      const audio = new Audio(url);
-
-      // Create AudioContext and AnalyserNode for waveform visualization
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const analyser = audioContext.createAnalyser();
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = 0.8;
-
-      // Create a media element source from the audio element
-      const source = audioContext.createMediaElementSource(audio);
-      source.connect(analyser);
-      analyser.connect(audioContext.destination);
-
-      // Store the audio instance, analyser, and context for later control
-      setAudioInstances((prev) => new Map(prev).set(recording.id, audio));
-      setAudioAnalysers((prev) => new Map(prev).set(recording.id, analyser));
-      setAudioContexts((prev) => new Map(prev).set(recording.id, audioContext));
-
-      // Set up event listeners
-      const cleanup = () => {
-        URL.revokeObjectURL(url);
-        
-        // Clean up duration check timeout
-        if ((audio as any)._durationCheckTimeout) {
-          clearTimeout((audio as any)._durationCheckTimeout);
-        }
-        
-        // Clean up progress interval
-        const interval = progressIntervalRef.current.get(recording.id);
-        if (interval) {
-          clearInterval(interval);
-          progressIntervalRef.current.delete(recording.id);
-        }
-        
-        // Clean up AudioContext
-        if (audioContext.state !== 'closed') {
-          audioContext.close().catch(console.error);
-        }
-        
-        setPlayingRecordings((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(recording.id);
-          return newSet;
-        });
-        setPausedRecordings((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(recording.id);
-          return newSet;
-        });
-        setAudioInstances((prev) => {
-          const newMap = new Map(prev);
-          newMap.delete(recording.id);
-          return newMap;
-        });
-        setAudioAnalysers((prev) => {
-          const newMap = new Map(prev);
-          newMap.delete(recording.id);
-          return newMap;
-        });
-        setAudioContexts((prev) => {
-          const newMap = new Map(prev);
-          newMap.delete(recording.id);
-          return newMap;
-        });
-        setRecordingProgress((prev) => {
-          const newMap = new Map(prev);
-          newMap.delete(recording.id);
-          return newMap;
-        });
-      };
-
-      const handleEnded = () => {
-        cleanup();
-      };
-
-      const handleError = (e: Event) => {
-        console.error("Audio playback error:", e);
-        cleanup();
-        message.error("Failed to play audio. The audio file may be corrupted.");
-      };
-
-      const handleLoadedMetadata = () => {
-        const duration = audio.duration;
-        // Validate duration - check for NaN, Infinity, or invalid values
-        const validDuration = (isFinite(duration) && duration > 0 && !isNaN(duration)) 
-          ? duration 
-          : 0;
-        
-        setRecordingProgress((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(recording.id, { current: 0, duration: validDuration });
-          return newMap;
-        });
-      };
-
-      const startProgressTracking = () => {
-        const interval = setInterval(() => {
-          // Use the audio variable from closure
-          if (audio) {
-            setRecordingProgress((prev) => {
-              const newMap = new Map(prev);
-              const current = newMap.get(recording.id);
-              if (current) {
-                const audioCurrentTime = isFinite(audio.currentTime) && !isNaN(audio.currentTime) 
-                  ? audio.currentTime 
-                  : 0;
-                const audioDuration = isFinite(audio.duration) && audio.duration > 0 && !isNaN(audio.duration)
-                  ? audio.duration
-                  : current.duration; // Keep existing duration if new one is invalid
-                
-                newMap.set(recording.id, {
-                  current: audioCurrentTime,
-                  duration: audioDuration,
-                });
-              }
-              return newMap;
-            });
-          }
-        }, 100);
-        progressIntervalRef.current.set(recording.id, interval);
-      };
-
-      audio.addEventListener("ended", handleEnded);
-      audio.addEventListener("error", handleError);
-      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
-      
-      // Also check duration after a short delay in case metadata loads after play starts
-      // This helps with short recordings or recordings where metadata isn't immediately available
-      const checkDurationDelayed = setTimeout(() => {
-        if (audio.readyState >= 1) { // HAVE_METADATA or higher
-          const duration = audio.duration;
-          const validDuration = (isFinite(duration) && duration > 0 && !isNaN(duration)) 
-            ? duration 
-            : 0;
-          
-          if (validDuration > 0) {
-            setRecordingProgress((prev) => {
-              const newMap = new Map(prev);
-              const current = newMap.get(recording.id);
-              if (current) {
-                newMap.set(recording.id, { 
-                  current: current.current, 
-                  duration: validDuration 
-                });
-              } else {
-                newMap.set(recording.id, { current: 0, duration: validDuration });
-              }
-              return newMap;
-            });
-          }
-        }
-      }, 500);
-
-      // Attempt to play
-      await audio.play();
-      
-      // Start tracking progress
-      startProgressTracking();
-      
-      // Clean up timeout on cleanup
-      (audio as any)._durationCheckTimeout = checkDurationDelayed;
-      
-      console.log(
-        "Audio playback started successfully for recording:",
-        recording.id,
-      );
-      message.success("Playing recording...");
-    } catch (error) {
-      console.error("Failed to play recording:", error);
-      setPlayingRecordings((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(recording.id);
-        return newSet;
-      });
-      setAudioInstances((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(recording.id);
-        return newMap;
-      });
-      setAudioAnalysers((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(recording.id);
-        return newMap;
-      });
-      setAudioContexts((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(recording.id);
-        return newMap;
-      });
-
-      if (error instanceof DOMException && error.name === "NotAllowedError") {
-        message.error(
-          "Browser blocked audio playback. Please click the play button again or check your browser settings.",
-        );
-      } else {
-        message.error(
-          `Failed to play audio: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-      }
-    }
+    stopRecording(recordingId);
+    message.success("Recording stopped");
   };
 
   const handlePlayPauseRecording = async (recording: any) => {
-    // Check if already playing - if so, pause it
-    if (playingRecordings.has(recording.id)) {
-      // Currently playing - pause it
-      const audio = audioInstances.get(recording.id);
-      if (audio) {
-        audio.pause();
-        setPlayingRecordings((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(recording.id);
-          return newSet;
-        });
-        setPausedRecordings((prev) => new Set(prev).add(recording.id));
-        
-        // Stop progress tracking
-        const interval = progressIntervalRef.current.get(recording.id);
-        if (interval) {
-          clearInterval(interval);
-          progressIntervalRef.current.delete(recording.id);
-        }
-      }
-    } else if (pausedRecordings.has(recording.id)) {
-      // Currently paused - resume it
-      const audio = audioInstances.get(recording.id);
-      if (audio) {
-        await audio.play();
-        setPausedRecordings((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(recording.id);
-          return newSet;
-        });
-        setPlayingRecordings((prev) => new Set(prev).add(recording.id));
-        
-        // Resume progress tracking
-        const startProgressTracking = () => {
-          const interval = setInterval(() => {
-            if (audio) {
-              setRecordingProgress((prev) => {
-                const newMap = new Map(prev);
-                const current = newMap.get(recording.id);
-                if (current) {
-                  const audioCurrentTime = isFinite(audio.currentTime) && !isNaN(audio.currentTime) 
-                    ? audio.currentTime 
-                    : 0;
-                  const audioDuration = isFinite(audio.duration) && audio.duration > 0 && !isNaN(audio.duration)
-                    ? audio.duration
-                    : current.duration; // Keep existing duration if new one is invalid
-                  
-                  newMap.set(recording.id, {
-                    current: audioCurrentTime,
-                    duration: audioDuration,
-                  });
-                }
-                return newMap;
-              });
-            }
-          }, 100);
-          progressIntervalRef.current.set(recording.id, interval);
-        };
-        startProgressTracking();
-      }
-    } else {
-      // Not playing or paused - start playback
-      await handlePlayRecording(recording);
+    if (!recording.audio) {
+      message.error("No audio data available for this recording.");
+      return;
     }
+    await togglePlayPause(recording.id, recording.audio);
   };
 
   const handleSeekRecording = (recordingId: number, value: number) => {
-    const audio = audioInstances.get(recordingId);
-    if (audio) {
-      // Validate the seek value
-      const validValue = isFinite(value) && !isNaN(value) && value >= 0 
-        ? value 
-        : 0;
-      
-      // Clamp to duration if available
-      const progress = recordingProgress.get(recordingId);
-      const maxValue = progress && isFinite(progress.duration) && progress.duration > 0
-        ? progress.duration
-        : validValue;
-      
-      const clampedValue = Math.min(validValue, maxValue);
-      
-      audio.currentTime = clampedValue;
-      setRecordingProgress((prev) => {
-        const newMap = new Map(prev);
-        const current = newMap.get(recordingId);
-        if (current) {
-          newMap.set(recordingId, {
-            current: clampedValue,
-            duration: current.duration,
-          });
-        }
-        return newMap;
-      });
-    }
+    seekRecording(recordingId, value);
   };
 
   const handleDownloadRecording = (recording: any) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Select, DatePicker, Space, Tooltip, Modal } from "antd";
+import { Input, Select, DatePicker, Space, Tooltip, Modal, Slider } from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -21,6 +21,8 @@ import ConfirmationModal, {
   GlassTable,
   type TableRow,
 } from "../components/ConfirmationModal";
+import AudioWaveform from "../components/AudioWaveform";
+import useAudioPlayback from "../hooks/useAudioPlayback";
 import Title from "antd/es/typography/Title";
 import dayjs from "dayjs";
 import type Recording from "../types/Recording";
@@ -86,12 +88,18 @@ function RecordingsList(): JSX.Element {
     title: string;
     content: React.ReactNode;
   } | null>(null);
-  const [playingRecordings, setPlayingRecordings] = useState<Set<number>>(
-    new Set(),
-  );
-  const [audioInstances, setAudioInstances] = useState<Map<number, HTMLAudioElement>>(
-    new Map(),
-  );
+  const {
+    playingRecordings,
+    pausedRecordings,
+    audioAnalysers,
+    recordingProgress,
+    playRecording,
+    pauseRecording,
+    resumeRecording,
+    stopRecording,
+    seekRecording,
+    togglePlayPause,
+  } = useAudioPlayback();
 
   useEffect(() => {
     loadRecordings();
@@ -405,113 +413,16 @@ function RecordingsList(): JSX.Element {
     });
   };
 
-  const handlePlayRecording = async (recording: ExtendedRecording) => {
-    // Check if already playing
-    if (playingRecordings.has(recording.id)) {
-      return;
-    }
-
-    console.log("Playing recording:", {
-      id: recording.id,
-      hasAudio: !!recording.audio,
-      audioType: recording.audio?.constructor?.name,
-      audioSize: recording.audio?.size,
-    });
-
+  const handlePlayPauseRecording = async (recording: ExtendedRecording) => {
     if (!recording.audio) {
-      console.error("No audio data found for recording:", recording.id);
       alert("No audio data available for this recording.");
       return;
     }
-
-    if (!(recording.audio instanceof Blob)) {
-      console.error("Audio data is not a Blob:", typeof recording.audio);
-      alert("Audio data format is invalid.");
-      return;
-    }
-
-    if (recording.audio.size === 0) {
-      console.error("Audio blob is empty for recording:", recording.id);
-      alert("Audio recording is empty.");
-      return;
-    }
-
-    try {
-      // Add to playing set
-      setPlayingRecordings((prev) => new Set(prev).add(recording.id));
-
-      const url = URL.createObjectURL(recording.audio);
-      const audio = new Audio(url);
-
-      // Store the audio instance for later pause/stop control
-      setAudioInstances((prev) => new Map(prev).set(recording.id, audio));
-
-      // Set up event listeners
-      const cleanup = () => {
-        URL.revokeObjectURL(url);
-        setPlayingRecordings((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(recording.id);
-          return newSet;
-        });
-        setAudioInstances((prev) => {
-          const newMap = new Map(prev);
-          newMap.delete(recording.id);
-          return newMap;
-        });
-      };
-
-      // Store cleanup functions on the audio object for later reference
-      audio.onended = cleanup;
-      audio.onerror = (e) => {
-        console.error("Audio playback error:", e);
-        cleanup();
-        alert("Failed to play audio. The audio file may be corrupted.");
-      };
-
-      audio.addEventListener("ended", audio.onended);
-      audio.addEventListener("error", audio.onerror);
-
-      // Attempt to play
-      await audio.play();
-      console.log(
-        "Audio playback started successfully for recording:",
-        recording.id,
-      );
-    } catch (error) {
-      console.error("Failed to play recording:", error);
-      setPlayingRecordings((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(recording.id);
-        return newSet;
-      });
-      setAudioInstances((prev) => {
-        const newMap = new Map(prev);
-        newMap.delete(recording.id);
-        return newMap;
-      });
-
-      if (error instanceof DOMException && error.name === "NotAllowedError") {
-        alert(
-          "Browser blocked audio playback. Please click the play button again or check your browser settings.",
-        );
-      } else {
-        alert(
-          `Failed to play audio: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
-      }
-    }
+    await togglePlayPause(recording.id, recording.audio);
   };
 
-  const handlePlayPauseRecording = async (recording: ExtendedRecording) => {
-    // Check if already playing - if so, stop it; if not, play it
-    if (playingRecordings.has(recording.id)) {
-      // Currently playing - stop/pause it
-      handleStopRecording(recording.id);
-    } else {
-      // Not playing - start playback
-      await handlePlayRecording(recording);
-    }
+  const handleSeekRecording = (recordingId: number, value: number) => {
+    seekRecording(recordingId, value);
   };
 
   const handleDownloadRecording = (recording: ExtendedRecording) => {
@@ -556,47 +467,7 @@ function RecordingsList(): JSX.Element {
   };
 
   const handleStopRecording = (recordingId: number) => {
-    try {
-      // Get the audio instance for this recording
-      const audio = audioInstances.get(recordingId);
-
-      if (audio) {
-        // Pause the audio
-        audio.pause();
-
-        // Reset to beginning for next playback
-        audio.currentTime = 0;
-
-        // Clean up the audio object
-        const url = audio.src;
-        if (url.startsWith('blob:')) {
-          URL.revokeObjectURL(url);
-        }
-
-        // Remove event listeners to prevent memory leaks
-        audio.removeEventListener('ended', audio.onended);
-        audio.removeEventListener('error', audio.onerror);
-      }
-
-      // Update state - remove from playing set and audio instances
-      setPlayingRecordings(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(recordingId);
-        return newSet;
-      });
-
-      setAudioInstances(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(recordingId);
-        return newMap;
-      });
-
-      console.log(`Stopped recording playback: ${recordingId}`);
-
-    } catch (error) {
-      console.error('Error stopping recording:', error);
-      alert("Failed to stop recording");
-    }
+    stopRecording(recordingId);
   };
 
   return (
@@ -957,121 +828,188 @@ function RecordingsList(): JSX.Element {
                               <div className="ml-6 space-y-2">
                                 {batchRecordings.map((recording) => (
                                   <GlassCard key={recording.id}>
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-2">
-                                          <h5 className="text-white font-medium">
-                                            {formatHeartArea(
-                                              recording.location,
-                                            )}{" "}
-                                            Valve
-                                          </h5>
-                                          <div
-                                            className="px-2 py-1 rounded-full text-xs font-medium"
-                                            style={{
-                                              backgroundColor: `${getStatusColor(recording.status)}20`,
-                                              color: getStatusColor(
-                                                recording.status,
-                                              ),
-                                            }}
-                                          >
-                                            {recording.status ===
-                                            "completed" ? (
-                                              <>
-                                                <CheckCircleOutlined className="mr-1" />{" "}
-                                                Completed
-                                              </>
-                                            ) : recording.status ===
-                                              "flagged" ? (
-                                              <>
-                                                <ExclamationCircleOutlined className="mr-1" />{" "}
-                                                Flagged
-                                              </>
-                                            ) : (
-                                              <>
-                                                <PlayCircleOutlined className="mr-1" />{" "}
-                                                Processing
-                                              </>
-                                            )}
-                                          </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                          <div className="flex items-center gap-2">
-                                            <CalendarOutlined className="text-white/60" />
-                                            <span className="text-white/70">
-                                              {recording.time}
-                                            </span>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <HeartOutlined className="text-white/60" />
-                                            <span className="text-white/70">
-                                              {recording.duration}
-                                            </span>
-                                          </div>
-                                        </div>
-
-                                        {recording.notes && (
-                                          <div className="mt-2 p-2 bg-white/10 rounded text-sm">
-                                            <span className="text-white/60">
-                                              Notes:{" "}
-                                            </span>
-                                            <span className="text-white">
-                                              {recording.notes}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      {/* Recording Actions */}
-                                      <div className="flex items-center gap-2 ml-4">
-                                        <Tooltip
-                                          title={
-                                            playingRecordings.has(recording.id)
-                                              ? "Pause Recording"
-                                              : "Play Recording"
-                                          }
-                                        >
-                                          <GlassButton
-                                            variant="secondary"
-                                            size="sm"
-                                            icon={
-                                              playingRecordings.has(recording.id) ? (
-                                                <PauseCircleOutlined
-                                                  className="text-green-400"
-                                                />
+                                    <div className="flex flex-col gap-3">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <h5 className="text-white font-medium">
+                                              {formatHeartArea(
+                                                recording.location,
+                                              )}{" "}
+                                              Valve
+                                            </h5>
+                                            <div
+                                              className="px-2 py-1 rounded-full text-xs font-medium"
+                                              style={{
+                                                backgroundColor: `${getStatusColor(recording.status)}20`,
+                                                color: getStatusColor(
+                                                  recording.status,
+                                                ),
+                                              }}
+                                            >
+                                              {recording.status ===
+                                              "completed" ? (
+                                                <>
+                                                  <CheckCircleOutlined className="mr-1" />{" "}
+                                                  Completed
+                                                </>
+                                              ) : recording.status ===
+                                                "flagged" ? (
+                                                <>
+                                                  <ExclamationCircleOutlined className="mr-1" />{" "}
+                                                  Flagged
+                                                </>
                                               ) : (
-                                                <PlayCircleOutlined />
-                                              )
+                                                <>
+                                                  <PlayCircleOutlined className="mr-1" />{" "}
+                                                  Processing
+                                                </>
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div className="flex items-center gap-2">
+                                              <CalendarOutlined className="text-white/60" />
+                                              <span className="text-white/70">
+                                                {recording.time}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <HeartOutlined className="text-white/60" />
+                                              <span className="text-white/70">
+                                                {recording.duration}
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          {recording.notes && (
+                                            <div className="mt-2 p-2 bg-white/10 rounded text-sm">
+                                              <span className="text-white/60">
+                                                Notes:{" "}
+                                              </span>
+                                              <span className="text-white">
+                                                {recording.notes}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+
+                                        {/* Recording Actions */}
+                                        <div className="flex items-center gap-2 ml-4">
+                                          <Tooltip
+                                            title={
+                                              playingRecordings.has(recording.id)
+                                                ? "Pause Recording"
+                                                : pausedRecordings.has(recording.id)
+                                                  ? "Resume Recording"
+                                                  : "Play Recording"
                                             }
-                                            onClick={() =>
-                                              handlePlayPauseRecording(recording)
-                                            }
-                                          />
-                                        </Tooltip>
-                                        <Tooltip title="Download">
-                                          <GlassButton
-                                            variant="secondary"
-                                            size="sm"
-                                            icon={<DownloadOutlined />}
-                                            onClick={() =>
-                                              handleDownloadRecording(recording)
-                                            }
-                                          />
-                                        </Tooltip>
-                                        <Tooltip title="Delete Recording">
-                                          <GlassButton
-                                            variant="danger"
-                                            size="sm"
-                                            icon={<DeleteOutlined />}
-                                            onClick={() =>
-                                              handleDeleteRecording(
-                                                recording.id,
-                                              )
-                                            }
-                                          />
-                                        </Tooltip>
+                                          >
+                                            <GlassButton
+                                              variant="secondary"
+                                              size="sm"
+                                              icon={
+                                                playingRecordings.has(recording.id) ? (
+                                                  <PauseCircleOutlined
+                                                    className="text-green-400"
+                                                  />
+                                                ) : pausedRecordings.has(recording.id) ? (
+                                                  <PlayCircleOutlined
+                                                    className="text-yellow-400"
+                                                  />
+                                                ) : (
+                                                  <PlayCircleOutlined />
+                                                )
+                                              }
+                                              onClick={() =>
+                                                handlePlayPauseRecording(recording)
+                                              }
+                                            />
+                                          </Tooltip>
+                                          <Tooltip title="Download">
+                                            <GlassButton
+                                              variant="secondary"
+                                              size="sm"
+                                              icon={<DownloadOutlined />}
+                                              onClick={() =>
+                                                handleDownloadRecording(recording)
+                                              }
+                                            />
+                                          </Tooltip>
+                                          <Tooltip title="Delete Recording">
+                                            <GlassButton
+                                              variant="danger"
+                                              size="sm"
+                                              icon={<DeleteOutlined />}
+                                              onClick={() =>
+                                                handleDeleteRecording(
+                                                  recording.id,
+                                                )
+                                              }
+                                            />
+                                          </Tooltip>
+                                        </div>
                                       </div>
+                                      
+                                      {/* Waveform visualization when playing or paused */}
+                                      {(playingRecordings.has(recording.id) || pausedRecordings.has(recording.id)) && (
+                                        <div className="mt-3 w-full flex flex-col items-center gap-3">
+                                          <div className="w-full flex justify-center">
+                                            <AudioWaveform
+                                              isActive={playingRecordings.has(recording.id)}
+                                              analyser={audioAnalysers.get(recording.id) || null}
+                                            />
+                                          </div>
+                                          
+                                          {/* Seek control */}
+                                          {(() => {
+                                            const progress = recordingProgress.get(recording.id);
+                                            // Validate duration - must be finite, positive, and not NaN
+                                            const isValidDuration = progress && 
+                                              isFinite(progress.duration) && 
+                                              progress.duration > 0 && 
+                                              !isNaN(progress.duration);
+                                            
+                                            if (isValidDuration) {
+                                              const formatTime = (seconds: number) => {
+                                                // Handle invalid values
+                                                if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
+                                                  return "0:00";
+                                                }
+                                                const mins = Math.floor(seconds / 60);
+                                                const secs = Math.floor(seconds % 60);
+                                                return `${mins}:${secs.toString().padStart(2, '0')}`;
+                                              };
+                                              
+                                              return (
+                                                <div className="w-full max-w-md px-4">
+                                                  <Slider
+                                                    min={0}
+                                                    max={progress.duration}
+                                                    value={Math.min(progress.current, progress.duration)}
+                                                    onChange={(value) => handleSeekRecording(recording.id, value)}
+                                                    tooltip={{
+                                                      formatter: (value) => formatTime(value || 0),
+                                                    }}
+                                                    styles={{
+                                                      track: { backgroundColor: 'rgba(140, 125, 209, 0.5)' },
+                                                      rail: { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+                                                      handle: { borderColor: 'rgba(140, 125, 209, 0.8)' },
+                                                    }}
+                                                  />
+                                                  <div className="flex justify-between text-xs text-white/70 mt-1">
+                                                    <span>{formatTime(progress.current)}</span>
+                                                    <span>{formatTime(progress.duration)}</span>
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            // Show waveform even if duration is not available yet
+                                            return null;
+                                          })()}
+                                        </div>
+                                      )}
                                     </div>
                                   </GlassCard>
                                 ))}
