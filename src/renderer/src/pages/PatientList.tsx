@@ -561,6 +561,11 @@ function PatientList(): JSX.Element {
       const cleanup = () => {
         URL.revokeObjectURL(url);
         
+        // Clean up duration check timeout
+        if ((audio as any)._durationCheckTimeout) {
+          clearTimeout((audio as any)._durationCheckTimeout);
+        }
+        
         // Clean up progress interval
         const interval = progressIntervalRef.current.get(recording.id);
         if (interval) {
@@ -617,9 +622,14 @@ function PatientList(): JSX.Element {
 
       const handleLoadedMetadata = () => {
         const duration = audio.duration;
+        // Validate duration - check for NaN, Infinity, or invalid values
+        const validDuration = (isFinite(duration) && duration > 0 && !isNaN(duration)) 
+          ? duration 
+          : 0;
+        
         setRecordingProgress((prev) => {
           const newMap = new Map(prev);
-          newMap.set(recording.id, { current: 0, duration });
+          newMap.set(recording.id, { current: 0, duration: validDuration });
           return newMap;
         });
       };
@@ -632,9 +642,16 @@ function PatientList(): JSX.Element {
               const newMap = new Map(prev);
               const current = newMap.get(recording.id);
               if (current) {
+                const audioCurrentTime = isFinite(audio.currentTime) && !isNaN(audio.currentTime) 
+                  ? audio.currentTime 
+                  : 0;
+                const audioDuration = isFinite(audio.duration) && audio.duration > 0 && !isNaN(audio.duration)
+                  ? audio.duration
+                  : current.duration; // Keep existing duration if new one is invalid
+                
                 newMap.set(recording.id, {
-                  current: audio.currentTime,
-                  duration: current.duration,
+                  current: audioCurrentTime,
+                  duration: audioDuration,
                 });
               }
               return newMap;
@@ -647,12 +664,42 @@ function PatientList(): JSX.Element {
       audio.addEventListener("ended", handleEnded);
       audio.addEventListener("error", handleError);
       audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+      
+      // Also check duration after a short delay in case metadata loads after play starts
+      // This helps with short recordings or recordings where metadata isn't immediately available
+      const checkDurationDelayed = setTimeout(() => {
+        if (audio.readyState >= 1) { // HAVE_METADATA or higher
+          const duration = audio.duration;
+          const validDuration = (isFinite(duration) && duration > 0 && !isNaN(duration)) 
+            ? duration 
+            : 0;
+          
+          if (validDuration > 0) {
+            setRecordingProgress((prev) => {
+              const newMap = new Map(prev);
+              const current = newMap.get(recording.id);
+              if (current) {
+                newMap.set(recording.id, { 
+                  current: current.current, 
+                  duration: validDuration 
+                });
+              } else {
+                newMap.set(recording.id, { current: 0, duration: validDuration });
+              }
+              return newMap;
+            });
+          }
+        }
+      }, 500);
 
       // Attempt to play
       await audio.play();
       
       // Start tracking progress
       startProgressTracking();
+      
+      // Clean up timeout on cleanup
+      (audio as any)._durationCheckTimeout = checkDurationDelayed;
       
       console.log(
         "Audio playback started successfully for recording:",
@@ -735,9 +782,16 @@ function PatientList(): JSX.Element {
                 const newMap = new Map(prev);
                 const current = newMap.get(recording.id);
                 if (current) {
+                  const audioCurrentTime = isFinite(audio.currentTime) && !isNaN(audio.currentTime) 
+                    ? audio.currentTime 
+                    : 0;
+                  const audioDuration = isFinite(audio.duration) && audio.duration > 0 && !isNaN(audio.duration)
+                    ? audio.duration
+                    : current.duration; // Keep existing duration if new one is invalid
+                  
                   newMap.set(recording.id, {
-                    current: audio.currentTime,
-                    duration: current.duration,
+                    current: audioCurrentTime,
+                    duration: audioDuration,
                   });
                 }
                 return newMap;
@@ -757,13 +811,26 @@ function PatientList(): JSX.Element {
   const handleSeekRecording = (recordingId: number, value: number) => {
     const audio = audioInstances.get(recordingId);
     if (audio) {
-      audio.currentTime = value;
+      // Validate the seek value
+      const validValue = isFinite(value) && !isNaN(value) && value >= 0 
+        ? value 
+        : 0;
+      
+      // Clamp to duration if available
+      const progress = recordingProgress.get(recordingId);
+      const maxValue = progress && isFinite(progress.duration) && progress.duration > 0
+        ? progress.duration
+        : validValue;
+      
+      const clampedValue = Math.min(validValue, maxValue);
+      
+      audio.currentTime = clampedValue;
       setRecordingProgress((prev) => {
         const newMap = new Map(prev);
         const current = newMap.get(recordingId);
         if (current) {
           newMap.set(recordingId, {
-            current: value,
+            current: clampedValue,
             duration: current.duration,
           });
         }
@@ -1224,8 +1291,18 @@ function PatientList(): JSX.Element {
                                         {/* Seek control */}
                                         {(() => {
                                           const progress = recordingProgress.get(recording.id);
-                                          if (progress && progress.duration > 0) {
+                                          // Validate duration - must be finite, positive, and not NaN
+                                          const isValidDuration = progress && 
+                                            isFinite(progress.duration) && 
+                                            progress.duration > 0 && 
+                                            !isNaN(progress.duration);
+                                          
+                                          if (isValidDuration) {
                                             const formatTime = (seconds: number) => {
+                                              // Handle invalid values
+                                              if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
+                                                return "0:00";
+                                              }
                                               const mins = Math.floor(seconds / 60);
                                               const secs = Math.floor(seconds % 60);
                                               return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -1236,7 +1313,7 @@ function PatientList(): JSX.Element {
                                                 <Slider
                                                   min={0}
                                                   max={progress.duration}
-                                                  value={progress.current}
+                                                  value={Math.min(progress.current, progress.duration)}
                                                   onChange={(value) => handleSeekRecording(recording.id, value)}
                                                   tooltip={{
                                                     formatter: (value) => formatTime(value || 0),
@@ -1254,6 +1331,7 @@ function PatientList(): JSX.Element {
                                               </div>
                                             );
                                           }
+                                          // Show waveform even if duration is not available yet
                                           return null;
                                         })()}
                                       </div>
