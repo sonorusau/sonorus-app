@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Input, Button, Modal, Form, DatePicker, message, Tooltip } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Input, Button, Modal, Form, DatePicker, message, Tooltip, Slider } from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -19,6 +19,7 @@ import ConfirmationModal, {
   GlassTable,
   type TableRow,
 } from "../components/ConfirmationModal";
+import AudioWaveform from "../components/AudioWaveform";
 import Title from "antd/es/typography/Title";
 import type Patient from "../types/Patient";
 import type PatientDetails from "../types/PatientDetails";
@@ -69,12 +70,35 @@ function PatientList(): JSX.Element {
   const [playingRecordings, setPlayingRecordings] = useState<Set<number>>(
     new Set(),
   );
+  const [pausedRecordings, setPausedRecordings] = useState<Set<number>>(
+    new Set(),
+  );
   const [audioInstances, setAudioInstances] = useState<Map<number, HTMLAudioElement>>(
     new Map(),
   );
+  const [audioAnalysers, setAudioAnalysers] = useState<Map<number, AnalyserNode>>(
+    new Map(),
+  );
+  const [audioContexts, setAudioContexts] = useState<Map<number, AudioContext>>(
+    new Map(),
+  );
+  const [recordingProgress, setRecordingProgress] = useState<Map<number, { current: number; duration: number }>>(
+    new Map(),
+  );
+  const progressIntervalRef = useRef<Map<number, NodeJS.Timeout>>(new Map());
 
   useEffect(() => {
     loadPatients();
+  }, []);
+
+  // Cleanup intervals on unmount
+  useEffect(() => {
+    return () => {
+      progressIntervalRef.current.forEach((interval) => {
+        clearInterval(interval);
+      });
+      progressIntervalRef.current.clear();
+    };
   }, []);
 
   const loadPatients = async () => {
@@ -402,6 +426,7 @@ function PatientList(): JSX.Element {
     try {
       // Get the audio instance for this recording
       const audio = audioInstances.get(recordingId);
+      const audioContext = audioContexts.get(recordingId);
 
       if (audio) {
         // Pause the audio
@@ -410,6 +435,13 @@ function PatientList(): JSX.Element {
         // Reset to beginning for next playback
         audio.currentTime = 0;
 
+        // Clean up progress interval
+        const interval = progressIntervalRef.current.get(recordingId);
+        if (interval) {
+          clearInterval(interval);
+          progressIntervalRef.current.delete(recordingId);
+        }
+
         // Clean up the audio object
         const url = audio.src;
         if (url.startsWith('blob:')) {
@@ -417,8 +449,12 @@ function PatientList(): JSX.Element {
         }
 
         // Remove event listeners to prevent memory leaks
-        audio.removeEventListener('ended', audio.onended);
-        audio.removeEventListener('error', audio.onerror);
+        // Note: Event listeners are automatically cleaned up when audio element is removed
+      }
+
+      // Clean up AudioContext
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close().catch(console.error);
       }
 
       // Update state - remove from playing set and audio instances
@@ -428,7 +464,31 @@ function PatientList(): JSX.Element {
         return newSet;
       });
 
+      setPausedRecordings(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(recordingId);
+        return newSet;
+      });
+
       setAudioInstances(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(recordingId);
+        return newMap;
+      });
+
+      setAudioAnalysers(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(recordingId);
+        return newMap;
+      });
+
+      setAudioContexts(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(recordingId);
+        return newMap;
+      });
+
+      setRecordingProgress(prev => {
         const newMap = new Map(prev);
         newMap.delete(recordingId);
         return newMap;
@@ -481,13 +541,44 @@ function PatientList(): JSX.Element {
       const url = URL.createObjectURL(recording.audio);
       const audio = new Audio(url);
 
-      // Store the audio instance for later pause/stop control
+      // Create AudioContext and AnalyserNode for waveform visualization
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.8;
+
+      // Create a media element source from the audio element
+      const source = audioContext.createMediaElementSource(audio);
+      source.connect(analyser);
+      analyser.connect(audioContext.destination);
+
+      // Store the audio instance, analyser, and context for later control
       setAudioInstances((prev) => new Map(prev).set(recording.id, audio));
+      setAudioAnalysers((prev) => new Map(prev).set(recording.id, analyser));
+      setAudioContexts((prev) => new Map(prev).set(recording.id, audioContext));
 
       // Set up event listeners
       const cleanup = () => {
         URL.revokeObjectURL(url);
+        
+        // Clean up progress interval
+        const interval = progressIntervalRef.current.get(recording.id);
+        if (interval) {
+          clearInterval(interval);
+          progressIntervalRef.current.delete(recording.id);
+        }
+        
+        // Clean up AudioContext
+        if (audioContext.state !== 'closed') {
+          audioContext.close().catch(console.error);
+        }
+        
         setPlayingRecordings((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(recording.id);
+          return newSet;
+        });
+        setPausedRecordings((prev) => {
           const newSet = new Set(prev);
           newSet.delete(recording.id);
           return newSet;
@@ -497,21 +588,72 @@ function PatientList(): JSX.Element {
           newMap.delete(recording.id);
           return newMap;
         });
+        setAudioAnalysers((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(recording.id);
+          return newMap;
+        });
+        setAudioContexts((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(recording.id);
+          return newMap;
+        });
+        setRecordingProgress((prev) => {
+          const newMap = new Map(prev);
+          newMap.delete(recording.id);
+          return newMap;
+        });
       };
 
-      // Store cleanup functions on the audio object for later reference
-      audio.onended = cleanup;
-      audio.onerror = (e) => {
+      const handleEnded = () => {
+        cleanup();
+      };
+
+      const handleError = (e: Event) => {
         console.error("Audio playback error:", e);
         cleanup();
         message.error("Failed to play audio. The audio file may be corrupted.");
       };
 
-      audio.addEventListener("ended", audio.onended);
-      audio.addEventListener("error", audio.onerror);
+      const handleLoadedMetadata = () => {
+        const duration = audio.duration;
+        setRecordingProgress((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(recording.id, { current: 0, duration });
+          return newMap;
+        });
+      };
+
+      const startProgressTracking = () => {
+        const interval = setInterval(() => {
+          // Use the audio variable from closure
+          if (audio) {
+            setRecordingProgress((prev) => {
+              const newMap = new Map(prev);
+              const current = newMap.get(recording.id);
+              if (current) {
+                newMap.set(recording.id, {
+                  current: audio.currentTime,
+                  duration: current.duration,
+                });
+              }
+              return newMap;
+            });
+          }
+        }, 100);
+        progressIntervalRef.current.set(recording.id, interval);
+      };
+
+      audio.addEventListener("ended", handleEnded);
+      audio.addEventListener("error", handleError);
+      audio.addEventListener("loadedmetadata", handleLoadedMetadata);
 
       // Attempt to play
       await audio.play();
+      
+      // Start tracking progress
+      startProgressTracking();
+      
       console.log(
         "Audio playback started successfully for recording:",
         recording.id,
@@ -525,6 +667,16 @@ function PatientList(): JSX.Element {
         return newSet;
       });
       setAudioInstances((prev) => {
+        const newMap = new Map(prev);
+        newMap.delete(recording.id);
+        return newMap;
+      });
+      setAudioAnalysers((prev) => {
+        const newMap = new Map(prev);
+        newMap.delete(recording.id);
+        return newMap;
+      });
+      setAudioContexts((prev) => {
         const newMap = new Map(prev);
         newMap.delete(recording.id);
         return newMap;
@@ -543,13 +695,80 @@ function PatientList(): JSX.Element {
   };
 
   const handlePlayPauseRecording = async (recording: any) => {
-    // Check if already playing - if so, stop it; if not, play it
+    // Check if already playing - if so, pause it
     if (playingRecordings.has(recording.id)) {
-      // Currently playing - stop/pause it
-      handleStopRecording(recording.id);
+      // Currently playing - pause it
+      const audio = audioInstances.get(recording.id);
+      if (audio) {
+        audio.pause();
+        setPlayingRecordings((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(recording.id);
+          return newSet;
+        });
+        setPausedRecordings((prev) => new Set(prev).add(recording.id));
+        
+        // Stop progress tracking
+        const interval = progressIntervalRef.current.get(recording.id);
+        if (interval) {
+          clearInterval(interval);
+          progressIntervalRef.current.delete(recording.id);
+        }
+      }
+    } else if (pausedRecordings.has(recording.id)) {
+      // Currently paused - resume it
+      const audio = audioInstances.get(recording.id);
+      if (audio) {
+        await audio.play();
+        setPausedRecordings((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(recording.id);
+          return newSet;
+        });
+        setPlayingRecordings((prev) => new Set(prev).add(recording.id));
+        
+        // Resume progress tracking
+        const startProgressTracking = () => {
+          const interval = setInterval(() => {
+            if (audio) {
+              setRecordingProgress((prev) => {
+                const newMap = new Map(prev);
+                const current = newMap.get(recording.id);
+                if (current) {
+                  newMap.set(recording.id, {
+                    current: audio.currentTime,
+                    duration: current.duration,
+                  });
+                }
+                return newMap;
+              });
+            }
+          }, 100);
+          progressIntervalRef.current.set(recording.id, interval);
+        };
+        startProgressTracking();
+      }
     } else {
-      // Not playing - start playback
+      // Not playing or paused - start playback
       await handlePlayRecording(recording);
+    }
+  };
+
+  const handleSeekRecording = (recordingId: number, value: number) => {
+    const audio = audioInstances.get(recordingId);
+    if (audio) {
+      audio.currentTime = value;
+      setRecordingProgress((prev) => {
+        const newMap = new Map(prev);
+        const current = newMap.get(recordingId);
+        if (current) {
+          newMap.set(recordingId, {
+            current: value,
+            duration: current.duration,
+          });
+        }
+        return newMap;
+      });
     }
   };
 
@@ -909,38 +1128,41 @@ function PatientList(): JSX.Element {
                                     padding="sm"
                                     className="w-[90%]"
                                   >
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-2">
-                                          <h5 className="text-white font-medium">
-                                            {recording.location} Valve
-                                          </h5>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-white/70">
-                                              {new Date(
-                                                recording.start_time,
-                                              ).toLocaleDateString()}{" "}
-                                              at{" "}
-                                              {new Date(
-                                                recording.start_time,
-                                              ).toLocaleTimeString()}
-                                            </span>
+                                    <div className="flex flex-col gap-3">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <div className="flex items-center justify-between mb-2">
+                                            <h5 className="text-white font-medium">
+                                              {recording.location} Valve
+                                            </h5>
                                           </div>
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-white/70">
-                                              30s recording
-                                            </span>
+                                          <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-white/70">
+                                                {new Date(
+                                                  recording.start_time,
+                                                ).toLocaleDateString()}{" "}
+                                                at{" "}
+                                                {new Date(
+                                                  recording.start_time,
+                                                ).toLocaleTimeString()}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-white/70">
+                                                30s recording
+                                              </span>
+                                            </div>
                                           </div>
                                         </div>
-                                      </div>
-                                      <div className="recording-actions flex items-center gap-2 ml-4">
+                                        <div className="recording-actions flex items-center gap-2 ml-4">
                                       <Tooltip
                                         title={
                                           playingRecordings.has(recording.id)
                                             ? "Pause Recording"
-                                            : "Play Recording"
+                                            : pausedRecordings.has(recording.id)
+                                              ? "Resume Recording"
+                                              : "Play Recording"
                                         }
                                       >
                                         <GlassButton
@@ -950,6 +1172,10 @@ function PatientList(): JSX.Element {
                                             playingRecordings.has(recording.id) ? (
                                               <PauseCircleOutlined
                                                 className="text-green-400"
+                                              />
+                                            ) : pausedRecordings.has(recording.id) ? (
+                                              <PlayCircleOutlined
+                                                className="text-yellow-400"
                                               />
                                             ) : (
                                               <PlayCircleOutlined />
@@ -984,6 +1210,55 @@ function PatientList(): JSX.Element {
                                       </Tooltip>
                                     </div>
                                     </div>
+                                    
+                                    {/* Waveform visualization when playing or paused */}
+                                    {(playingRecordings.has(recording.id) || pausedRecordings.has(recording.id)) && (
+                                      <div className="mt-3 w-full flex flex-col items-center gap-3">
+                                        <div className="w-full flex justify-center">
+                                          <AudioWaveform
+                                            isActive={playingRecordings.has(recording.id)}
+                                            analyser={audioAnalysers.get(recording.id) || null}
+                                          />
+                                        </div>
+                                        
+                                        {/* Seek control */}
+                                        {(() => {
+                                          const progress = recordingProgress.get(recording.id);
+                                          if (progress && progress.duration > 0) {
+                                            const formatTime = (seconds: number) => {
+                                              const mins = Math.floor(seconds / 60);
+                                              const secs = Math.floor(seconds % 60);
+                                              return `${mins}:${secs.toString().padStart(2, '0')}`;
+                                            };
+                                            
+                                            return (
+                                              <div className="w-full max-w-md px-4">
+                                                <Slider
+                                                  min={0}
+                                                  max={progress.duration}
+                                                  value={progress.current}
+                                                  onChange={(value) => handleSeekRecording(recording.id, value)}
+                                                  tooltip={{
+                                                    formatter: (value) => formatTime(value || 0),
+                                                  }}
+                                                  styles={{
+                                                    track: { backgroundColor: 'rgba(140, 125, 209, 0.5)' },
+                                                    rail: { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+                                                    handle: { borderColor: 'rgba(140, 125, 209, 0.8)' },
+                                                  }}
+                                                />
+                                                <div className="flex justify-between text-xs text-white/70 mt-1">
+                                                  <span>{formatTime(progress.current)}</span>
+                                                  <span>{formatTime(progress.duration)}</span>
+                                                </div>
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
+                                      </div>
+                                    )}
+                                  </div>
                                   </GlassCard>
                                 ))
                               ) : (
