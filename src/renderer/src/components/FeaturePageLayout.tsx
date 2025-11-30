@@ -13,34 +13,28 @@ function FeaturePageLayout(): JSX.Element {
   return (
     <BackgroundLayout>
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div
-          className="w-[90%] mx-auto mt-4 mb-4 rounded-xl flex items-center gap-8 py-2 px-4 bg-white/15 backdrop-blur-xl border z-30 no-drag"
+        {/* Header - Minimal design */}
+        <header
+          className="w-full flex items-center gap-4 py-3 px-6 border-b border-white/10 z-30"
           style={{
-            borderColor: "#ACACE6",
-            boxShadow:
-              "0 4px 16px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.05) inset",
-            transform: isMacOS
-              ? "translateX(var(--macos-traffic-light-offset))"
-              : "none",
+            paddingLeft: isMacOS
+              ? "calc(1.5rem + var(--macos-traffic-light-offset))"
+              : "1.5rem",
           }}
         >
           <div className="no-drag">
             <BackButton />
           </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center">
-              <img
-                src={image}
-                alt="Sonorus Logo"
-                className="h-8 w-32 mx-auto sonorus-logo object-contain"
-              />
-            </div>
-          </div>
-          <div className="ml-auto no-drag">
+          <img
+            src={image}
+            alt="Sonorus Logo"
+            className="h-6 w-auto object-contain opacity-80"
+          />
+          <div className="flex-1" />
+          <div className="no-drag">
             <Navbar />
           </div>
-        </div>
+        </header>
 
         {/* Main content */}
         <main className="flex-1 flex justify-center px-8 pb-16 overflow-auto">

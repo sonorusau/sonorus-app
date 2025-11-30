@@ -12,10 +12,88 @@
   /* macOS traffic light avoidance offset */
   --macos-traffic-light-offset: 32px;
 
+  /* =~= Typography System =~= */
+  /* Font Families - Using distinctive fonts */
+  --font-display: 'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif;
+  --font-body: 'Figtree', 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  
+  /* Type Scale (using minor third ratio 1.2) */
+  --text-xs: 0.694rem;    /* 11px */
+  --text-sm: 0.833rem;    /* 13px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.2rem;      /* 19px */
+  --text-xl: 1.44rem;     /* 23px */
+  --text-2xl: 1.728rem;   /* 28px */
+  --text-3xl: 2.074rem;   /* 33px */
+  --text-4xl: 2.488rem;   /* 40px */
+  
+  /* Line Heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+
+  /* =~= Glass Effect System =~= */
+  /* Glass Blur Levels */
+  --glass-blur-xs: 4px;
+  --glass-blur-sm: 8px;
+  --glass-blur-md: 12px;
+  --glass-blur-lg: 20px;
+  --glass-blur-xl: 32px;
+  
+  /* Glass Backgrounds - Dark Mode */
+  --glass-bg-subtle: rgba(255, 255, 255, 0.03);
+  --glass-bg-default: rgba(255, 255, 255, 0.06);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.1);
+  --glass-bg-prominent: rgba(255, 255, 255, 0.15);
+  
+  /* Glass Borders */
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-border-default: rgba(172, 172, 230, 0.2);
+  --glass-border-prominent: rgba(172, 172, 230, 0.4);
+  
+  /* Glass Shadows */
+  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --glass-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  --glass-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 40px rgba(140, 125, 209, 0.1);
+  --glass-shadow-glow: 0 0 20px rgba(140, 125, 209, 0.3);
+
+  /* =~= Spacing System =~= */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.25rem;   /* 20px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  
+  /* Component-specific spacing */
+  --card-padding-sm: var(--space-4);
+  --card-padding-md: var(--space-6);
+  --card-padding-lg: var(--space-8);
+  --section-gap: var(--space-8);
+  --item-gap: var(--space-3);
+
+  /* =~= Border Radius =~= */
+  --radius-sm: 0.5rem;    /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+  --radius-full: 9999px;
+
   /* Current theme (dark by default) */
   /* =~= Theme Properties =~= */
-  --theme-font-family-base: system-ui;
-  --theme-font-family-heading: system-ui;
+  --theme-font-family-base: var(--font-body);
+  --theme-font-family-heading: var(--font-display);
   --theme-font-color-base: 0 0 0;
   --theme-font-color-dark: var(--color-primary-100);
   --theme-rounded-base: 9999px;
@@ -178,6 +256,20 @@
   --glass-bg: rgba(248, 250, 252, 0.8); /* Light gray background */
   --glass-border: rgba(226, 232, 240, 1); /* Light border */
   --glass-bg-hover: rgba(241, 245, 249, 0.9);
+  
+  /* Light mode glass overrides */
+  --glass-bg-subtle: rgba(255, 255, 255, 0.5);
+  --glass-bg-default: rgba(255, 255, 255, 0.7);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.85);
+  --glass-bg-prominent: rgba(255, 255, 255, 0.95);
+  
+  --glass-border-subtle: rgba(0, 0, 0, 0.05);
+  --glass-border-default: rgba(172, 172, 230, 0.3);
+  --glass-border-prominent: rgba(172, 172, 230, 0.5);
+  
+  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --glass-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --glass-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 /* Light theme uses dark text on light background - More comprehensive overrides */
@@ -676,4 +768,91 @@
 .macos-drag-header * {
   -webkit-app-region: no-drag;
   pointer-events: auto;
+}
+
+/* =~= Typography Utility Classes =~= */
+.text-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.text-heading {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.text-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: var(--tracking-normal);
+  line-height: var(--leading-normal);
+}
+
+.text-label {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.text-caption {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.light-theme .text-caption {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+/* =~= Skeleton Loading Animation =~= */
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-skeleton {
+  animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Skeleton base style */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.light-theme .skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.06) 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    rgba(0, 0, 0, 0.06) 100%
+  );
+  background-size: 200% 100%;
 }

@@ -1,13 +1,14 @@
-import { ReactNode } from "react";
+import { ReactNode, CSSProperties } from "react";
 
 interface GlassButtonProps {
   children?: ReactNode;
   onClick?: () => void;
-  variant?: "primary" | "secondary" | "danger" | "success";
+  variant?: "primary" | "secondary" | "danger" | "success" | "ghost";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
   className?: string;
   icon?: ReactNode;
+  type?: "button" | "submit" | "reset";
 }
 
 function GlassButton({
@@ -18,57 +19,61 @@ function GlassButton({
   disabled = false,
   className = "",
   icon,
+  type = "button",
 }: GlassButtonProps): JSX.Element {
   const sizeClasses = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-6 py-3 text-base",
-    lg: "px-8 py-4 text-lg",
+    sm: "px-3 py-1.5 text-sm gap-1.5",
+    md: "px-5 py-2.5 text-base gap-2",
+    lg: "px-7 py-3.5 text-lg gap-2.5",
   };
 
-  const variantStyles = {
+  const variantStyles: Record<string, CSSProperties> = {
     primary: {
-      background: "rgba(140, 125, 209, 0.1)",
-      borderColor: "#8C7DD1",
-      color: "white",
+      background: "rgba(116, 74, 161, 0.2)",
+      borderColor: "rgb(116, 74, 161)",
     },
     secondary: {
-      background: "var(--glass-bg)",
-      borderColor: "var(--glass-border)",
-      color: "white",
+      background: "var(--glass-bg-default)",
+      borderColor: "var(--glass-border-default)",
     },
     danger: {
-      background: "rgba(239, 68, 68, 0.1)",
-      borderColor: "#ef4444",
-      color: "white",
+      background: "rgba(143, 15, 34, 0.15)",
+      borderColor: "rgb(143, 15, 34)",
     },
     success: {
-      background: "rgba(16, 185, 129, 0.1)",
-      borderColor: "#10b981",
-      color: "white",
+      background: "rgba(114, 197, 133, 0.15)",
+      borderColor: "rgb(114, 197, 133)",
     },
+    ghost: {
+      background: "transparent",
+      borderColor: "transparent",
+    },
+  };
+
+  const hoverClasses: Record<string, string> = {
+    primary: "hover:bg-[rgba(116,74,161,0.35)] hover:shadow-[0_0_20px_rgba(116,74,161,0.4)]",
+    secondary: "hover:bg-[var(--glass-bg-elevated)] hover:border-[var(--glass-border-prominent)]",
+    danger: "hover:bg-[rgba(143,15,34,0.3)] hover:shadow-[0_0_20px_rgba(143,15,34,0.3)]",
+    success: "hover:bg-[rgba(114,197,133,0.3)] hover:shadow-[0_0_20px_rgba(114,197,133,0.3)]",
+    ghost: "hover:bg-[var(--glass-bg-subtle)]",
   };
 
   return (
     <button
+      type={type}
       className={`
-        backdrop-blur-sm rounded-xl border font-medium
-        transition-all duration-300 hover:backdrop-blur-md
-        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95 hover:scale-105"}
+        rounded-xl border font-medium text-white
+        backdrop-blur-sm transition-all duration-200
+        flex items-center justify-center
+        ${disabled ? "opacity-50 cursor-not-allowed" : `cursor-pointer active:scale-[0.97] ${hoverClasses[variant]}`}
         ${sizeClasses[size]}
         ${className}
-        flex items-center justify-center gap-2
       `}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      style={{
-        background: variantStyles[variant].background,
-        borderColor: variantStyles[variant].borderColor,
-        color: variantStyles[variant].color,
-        boxShadow:
-          "0 8px 32px rgba(0, 0, 0, 0.12), 0 0 30px rgba(255, 255, 255, 0.03) inset, 0 2px 16px rgba(140, 125, 209, 0.08)",
-      }}
+      style={variantStyles[variant]}
     >
-      {icon && <span>{icon}</span>}
+      {icon && <span className="flex-shrink-0">{icon}</span>}
       {children}
     </button>
   );

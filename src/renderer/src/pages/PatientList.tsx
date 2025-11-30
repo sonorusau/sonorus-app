@@ -21,6 +21,8 @@ import ConfirmationModal, {
 } from "../components/ConfirmationModal";
 import AudioWaveform from "../components/AudioWaveform";
 import useAudioPlayback from "../hooks/useAudioPlayback";
+import { PatientCardSkeleton, PatientDetailSkeleton, RecordingCardSkeleton } from "../components/Skeleton";
+import EmptyState from "../components/EmptyState";
 import Title from "antd/es/typography/Title";
 import type Patient from "../types/Patient";
 import type PatientDetails from "../types/PatientDetails";
@@ -483,9 +485,19 @@ function PatientList(): JSX.Element {
           {/* Patient list */}
           <div className="patients-list">
             {loading ? (
-              <div className="text-center text-white/60 py-8">
-                Loading patients...
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <PatientCardSkeleton key={i} />
+                ))}
               </div>
+            ) : filteredPatients.length === 0 ? (
+              <EmptyState
+                type="patients"
+                title={searchTerm ? "No matching patients" : "No patients yet"}
+                description={searchTerm ? "Try a different search term" : "Add your first patient to start recording heart sounds."}
+                actionLabel={!searchTerm ? "Add New Patient" : undefined}
+                onAction={!searchTerm ? handleAddNewPatient : undefined}
+              />
             ) : (
               filteredPatients.map((patient) => (
                 <div
@@ -519,134 +531,126 @@ function PatientList(): JSX.Element {
       {/* Main patient details */}
       <div className="main-content">
         <GlassCard padding="lg" className="h-full overflow-y-auto">
-          {/* Patient Header */}
-          {selectedPatient ? (
-            <div className="patient-header">
-              <div className="patient-header-avatar">
-                {selectedPatient.name.charAt(0)}
+          {loading ? (
+            <PatientDetailSkeleton />
+          ) : selectedPatient ? (
+            <>
+              {/* Patient Header */}
+              <div className="patient-header">
+                <div className="patient-header-avatar">
+                  {selectedPatient.name.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  <h1 className="patient-title text-heading">{selectedPatient.name}</h1>
+                  <p className="text-white/60 text-sm">
+                    Patient ID: {selectedPatient.patient_uid}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Tooltip title="Delete Patient">
+                    <GlassButton
+                      variant="danger"
+                      size="sm"
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeletePatient(selectedPatient.id)}
+                    />
+                  </Tooltip>
+                </div>
               </div>
-              <div>
-                <h1 className="patient-title">{selectedPatient.name}</h1>
-              </div>
-            </div>
+            </>
           ) : (
-            <div className="text-center text-white/60 py-8">
-              Select a patient to view details
+            <EmptyState
+              type="generic"
+              title="Select a patient"
+              description="Choose a patient from the list to view their details and recording history."
+            />
+          )}
+
+          {/* Quick Stats Row */}
+          {selectedPatient && !loading && (
+            <div className="grid grid-cols-4 gap-3 mb-8">
+              {[
+                { value: patientBatches.length, label: "Sessions" },
+                { value: patientBatches.reduce((acc, b) => acc + (b.recordings?.length || 0), 0), label: "Recordings" },
+                { value: `${selectedPatient.patient_details.height}cm`, label: "Height" },
+                { value: `${selectedPatient.patient_details.weight}kg`, label: "Weight" },
+              ].map((stat, i) => (
+                <div 
+                  key={i}
+                  className="rounded-xl p-4 text-center border border-white/[0.08]"
+                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02))" }}
+                >
+                  <p className="text-xl font-semibold text-white">{stat.value}</p>
+                  <p className="text-xs text-white/50 uppercase tracking-wider mt-1">{stat.label}</p>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Patient Information Grid */}
-          {selectedPatient && (
-            <div className="info-grid">
-              <div className="info-section">
-                <div className="info-item">
-                  <p className="info-label">Date of Birth</p>
-                  <p className="info-value">
-                    {new Date(selectedPatient.dob).toLocaleDateString()}
+          {/* Patient Details Section */}
+          {selectedPatient && !loading && (
+            <section className="border border-white/10 rounded-xl overflow-hidden mb-8">
+              <div className="bg-white/5 px-5 py-3 flex items-center justify-between">
+                <h2 className="text-sm font-medium text-white/90 uppercase tracking-wide">
+                  Patient Details
+                </h2>
+              </div>
+              <div className="p-5 grid grid-cols-2 gap-x-8 gap-y-4">
+                <div>
+                  <p className="text-label text-white/50 mb-1">Date of Birth</p>
+                  <p className="text-white">{new Date(selectedPatient.dob).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-label text-white/50 mb-1">Patient UID</p>
+                  <p className="text-white font-mono text-sm">{selectedPatient.patient_uid}</p>
+                </div>
+                <div>
+                  <p className="text-label text-white/50 mb-1">Conditions</p>
+                  <p className="text-white">
+                    {selectedPatient.patient_details.conditions.length > 0
+                      ? selectedPatient.patient_details.conditions.join(", ")
+                      : "—"}
                   </p>
                 </div>
-                <div className="info-item">
-                  <p className="info-label">Height</p>
-                  <p className="info-value">
-                    {selectedPatient.patient_details.height}cm
-                  </p>
-                </div>
-                <div className="info-item">
-                  <p className="info-label">Weight</p>
-                  <p className="info-value">
-                    {selectedPatient.patient_details.weight}kg
+                <div>
+                  <p className="text-label text-white/50 mb-1">Medications</p>
+                  <p className="text-white">
+                    {selectedPatient.patient_details.medications.length > 0
+                      ? selectedPatient.patient_details.medications.join(", ")
+                      : "—"}
                   </p>
                 </div>
               </div>
-              <div className="info-section">
-                <div className="info-item">
-                  <p className="info-label">Patient UID</p>
-                  <p className="info-value">{selectedPatient.patient_uid}</p>
-                </div>
-                <div className="info-item">
-                  <p className="info-label">Actions</p>
-                  <div className="flex gap-2">
-                    <Tooltip title="Delete Patient">
-                      <GlassButton
-                        variant="danger"
-                        size="sm"
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleDeletePatient(selectedPatient.id)}
-                      />
-                    </Tooltip>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </section>
           )}
 
-          {/* Medical History Section */}
-          {selectedPatient && (
-            <div className="mb-8">
-              <div className="section-header">
-                <div className="section-dot"></div>
-                <h2 className="section-title">Medical History</h2>
-              </div>
-
-              <div className="info-grid">
-                <div className="info-section">
-                  <div className="info-item">
-                    <p className="info-label">Conditions</p>
-                    <p className="info-value">
-                      {selectedPatient.patient_details.conditions.length > 0
-                        ? selectedPatient.patient_details.conditions.join(", ")
-                        : "None"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="info-section">
-                  <div className="info-item">
-                    <p className="info-label">Medications</p>
-                    <p className="info-value">
-                      {selectedPatient.patient_details.medications.length > 0
-                        ? selectedPatient.patient_details.medications.join(", ")
-                        : "None"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Recording Sessions Section */}
-          {selectedPatient && (
-            <div>
-              <div className="section-header">
-                <div className="section-dot"></div>
-                <h2 className="section-title">Recording Sessions</h2>
-                <div className="ml-auto">
-                  <GlassButton
-                    size="sm"
-                    variant="primary"
-                    onClick={handleAddRecording}
-                  >
-                    New Recording Session
-                  </GlassButton>
-                </div>
+          {selectedPatient && !loading && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white flex items-center gap-2 text-heading">
+                  <HeartOutlined className="text-purple-400" />
+                  Recording Sessions
+                </h2>
+                <GlassButton
+                  size="sm"
+                  variant="primary"
+                  onClick={handleAddRecording}
+                >
+                  New Session
+                </GlassButton>
               </div>
 
               <div className="recordings-list max-w-4xl mx-auto">
                 {patientBatches.length === 0 ? (
-                  <div className="text-center text-white/60 py-8">
-                    <HeartOutlined
-                      style={{
-                        fontSize: "48px",
-                        marginBottom: "16px",
-                        opacity: 0.3,
-                      }}
-                    />
-                    <div>No recording sessions found.</div>
-                    <div className="text-sm mt-2">
-                      Click "New Recording Session" to start recording heart
-                      sounds.
-                    </div>
-                  </div>
+                  <EmptyState
+                    type="recordings"
+                    title="No recording sessions"
+                    description="Start a new recording session to capture heart sounds for this patient."
+                    actionLabel="Start Recording"
+                    onAction={handleAddRecording}
+                  />
                 ) : (
                   <div className="space-y-3">
                     {patientBatches.map((batch) => {
@@ -936,130 +940,225 @@ function PatientList(): JSX.Element {
                   </div>
                 )}
               </div>
-            </div>
+            </section>
           )}
         </GlassCard>
         <div className="mb-16"></div>
       </div>
 
-      {/* New Patient Modal */}
+      {/* New Patient Modal - Enhanced */}
       <Modal
-        title="Add New Patient"
         open={showNewPatientModal}
-        onOk={handleCreatePatient}
         onCancel={handleModalCancel}
-        width={600}
-        okText="Create Patient"
-        cancelText="Cancel"
+        footer={null}
+        width={640}
+        centered
+        closable={true}
+        maskClosable={false}
+        className="new-patient-modal"
+        maskStyle={{
+          backgroundColor: "rgba(0, 0, 0, 0.75)",
+        }}
       >
-        <Form form={form} layout="vertical" requiredMark={false}>
-          <Form.Item
-            name="name"
-            label="Patient Name *"
-            rules={[
-              { required: true, message: "Please enter patient name" },
-              { min: 2, message: "Name must be at least 2 characters" },
-            ]}
-          >
-            <Input placeholder="Enter patient's full name" />
-          </Form.Item>
-
-          <Form.Item
-            name="dob"
-            label="Date of Birth *"
-            rules={[{ required: true, message: "Please select date of birth" }]}
-          >
-            <DatePicker
-              style={{ width: "100%" }}
-              placeholder="Select date of birth"
-              disabledDate={(current) => current && current > dayjs()}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="patient_uid"
-            label="Patient UID *"
-            rules={[
-              { required: true, message: "Please enter patient UID" },
-              { min: 3, message: "Patient UID must be at least 3 characters" },
-            ]}
-          >
-            <Input placeholder="Unique patient identifier" />
-          </Form.Item>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-            }}
-          >
-            <Form.Item
-              name="height"
-              label="Height (cm) *"
-              rules={[
-                { required: true, message: "Please enter height" },
-                {
-                  type: "number",
-                  min: 50,
-                  max: 250,
-                  message: "Height must be between 50-250 cm",
-                },
-              ]}
+        <div className="p-2">
+          {/* Modal Header */}
+          <div className="flex items-center gap-4 mb-6">
+            <div 
+              className="w-12 h-12 rounded-xl flex items-center justify-center"
+              style={{ background: "rgb(116, 74, 161)" }}
             >
-              <Input type="number" placeholder="Height in cm" />
-            </Form.Item>
-
-            <Form.Item
-              name="weight"
-              label="Weight (kg) *"
-              rules={[
-                { required: true, message: "Please enter weight" },
-                {
-                  type: "number",
-                  min: 10,
-                  max: 300,
-                  message: "Weight must be between 10-300 kg",
-                },
-              ]}
-            >
-              <Input type="number" placeholder="Weight in kg" />
-            </Form.Item>
+              <PlusOutlined className="text-white text-xl" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white m-0 text-heading">
+                Add New Patient
+              </h2>
+              <p className="text-white/60 text-sm m-0 mt-1">
+                Enter patient information to create a new record
+              </p>
+            </div>
           </div>
 
-          <Form.Item
-            name="medications"
-            label="Current Medications"
-            extra="Enter medications separated by commas"
-          >
-            <Input.TextArea
-              placeholder="e.g., Aspirin 81mg, Lisinopril 10mg, Metformin 500mg"
-              rows={3}
-            />
-          </Form.Item>
+          <Form form={form} layout="vertical" requiredMark={false} className="new-patient-form">
+            {/* Basic Information Section */}
+            <div className="form-section mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                <span className="text-xs font-medium text-white/70 uppercase tracking-wide">
+                  Basic Information
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                  name="name"
+                  label={<span className="text-white/90 font-medium">Full Name</span>}
+                  rules={[
+                    { required: true, message: "Please enter patient name" },
+                    { min: 2, message: "Name must be at least 2 characters" },
+                  ]}
+                  className="col-span-2"
+                >
+                  <Input 
+                    placeholder="Enter patient's full name" 
+                    size="large"
+                    className="modal-input"
+                  />
+                </Form.Item>
 
-          <Form.Item
-            name="conditions"
-            label="Medical Conditions"
-            extra="Enter conditions separated by commas"
-          >
-            <Input.TextArea
-              placeholder="e.g., Hypertension, Diabetes Type 2, Atrial Fibrillation"
-              rows={3}
-            />
-          </Form.Item>
+                <Form.Item
+                  name="dob"
+                  label={<span className="text-white/90 font-medium">Date of Birth</span>}
+                  rules={[{ required: true, message: "Please select date of birth" }]}
+                >
+                  <DatePicker
+                    style={{ width: "100%" }}
+                    size="large"
+                    placeholder="Select date"
+                    disabledDate={(current) => current && current > dayjs()}
+                    className="modal-input"
+                  />
+                </Form.Item>
 
-          <Form.Item
-            name="notes"
-            label="Additional Notes"
-            extra="Any additional medical notes or observations"
-          >
-            <Input.TextArea
-              placeholder="Additional medical history, allergies, or notes"
-              rows={2}
-            />
-          </Form.Item>
-        </Form>
+                <Form.Item
+                  name="patient_uid"
+                  label={<span className="text-white/90 font-medium">Patient ID</span>}
+                  rules={[
+                    { required: true, message: "Please enter patient ID" },
+                    { min: 3, message: "ID must be at least 3 characters" },
+                  ]}
+                >
+                  <Input 
+                    placeholder="Unique identifier" 
+                    size="large"
+                    className="modal-input"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Physical Measurements Section */}
+            <div className="form-section mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span className="text-xs font-medium text-white/70 uppercase tracking-wide">
+                  Physical Measurements
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Form.Item
+                  name="height"
+                  label={<span className="text-white/90 font-medium">Height</span>}
+                  rules={[
+                    { required: true, message: "Required" },
+                    {
+                      type: "number",
+                      min: 50,
+                      max: 250,
+                      message: "50-250 cm",
+                    },
+                  ]}
+                >
+                  <Input 
+                    type="number" 
+                    placeholder="Height" 
+                    size="large"
+                    suffix={<span className="text-white/40">cm</span>}
+                    className="modal-input"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="weight"
+                  label={<span className="text-white/90 font-medium">Weight</span>}
+                  rules={[
+                    { required: true, message: "Required" },
+                    {
+                      type: "number",
+                      min: 10,
+                      max: 300,
+                      message: "10-300 kg",
+                    },
+                  ]}
+                >
+                  <Input 
+                    type="number" 
+                    placeholder="Weight" 
+                    size="large"
+                    suffix={<span className="text-white/40">kg</span>}
+                    className="modal-input"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Medical History Section */}
+            <div className="form-section mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="text-xs font-medium text-white/70 uppercase tracking-wide">
+                  Medical History
+                </span>
+                <span className="text-xs text-white/40 ml-auto">Optional</span>
+              </div>
+              
+              <div className="space-y-4">
+                <Form.Item
+                  name="conditions"
+                  label={<span className="text-white/90 font-medium">Medical Conditions</span>}
+                >
+                  <Input.TextArea
+                    placeholder="e.g., Hypertension, Diabetes Type 2, Atrial Fibrillation"
+                    rows={2}
+                    className="modal-input"
+                  />
+                  <p className="text-white/40 text-xs mt-1">Separate multiple conditions with commas</p>
+                </Form.Item>
+
+                <Form.Item
+                  name="medications"
+                  label={<span className="text-white/90 font-medium">Current Medications</span>}
+                >
+                  <Input.TextArea
+                    placeholder="e.g., Aspirin 81mg, Lisinopril 10mg, Metformin 500mg"
+                    rows={2}
+                    className="modal-input"
+                  />
+                  <p className="text-white/40 text-xs mt-1">Include dosage if known</p>
+                </Form.Item>
+
+                <Form.Item
+                  name="notes"
+                  label={<span className="text-white/90 font-medium">Additional Notes</span>}
+                >
+                  <Input.TextArea
+                    placeholder="Allergies, special considerations, or other relevant information"
+                    rows={2}
+                    className="modal-input"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+              <GlassButton
+                variant="secondary"
+                onClick={handleModalCancel}
+              >
+                Cancel
+              </GlassButton>
+              <GlassButton
+                variant="primary"
+                onClick={handleCreatePatient}
+                icon={<PlusOutlined />}
+              >
+                Create Patient
+              </GlassButton>
+            </div>
+          </Form>
+        </div>
       </Modal>
 
       {/* Confirmation Modal */}
