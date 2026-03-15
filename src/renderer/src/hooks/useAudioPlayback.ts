@@ -171,7 +171,9 @@ const useAudioPlayback = (): UseAudioPlaybackResult => {
 
         // Create AudioContext and AnalyserNode for waveform visualization
         const audioContext = new (
-          window.AudioContext || (window as any).webkitAudioContext
+          globalThis.AudioContext ||
+          (globalThis as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext
         )();
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 2048;
