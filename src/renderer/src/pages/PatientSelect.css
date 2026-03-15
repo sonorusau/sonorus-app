@@ -45,7 +45,7 @@
 }
 
 .patient-card::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(116, 74, 161, 0.1), transparent);
@@ -229,7 +229,6 @@
   margin-right: auto;
 }
 
-
 /* Recording Card - Enhanced */
 .recording-card {
   background: var(--glass-bg-subtle);
@@ -302,7 +301,7 @@
 }
 
 .recording-duration {
-  color: #8C7DD1;
+  color: #8c7dd1;
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -328,22 +327,26 @@
 
 .search-input {
   background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid #ACACE6 !important;
+  border: 1px solid #acace6 !important;
   border-radius: 0.75rem !important;
   color: white !important;
   backdrop-filter: blur(10px) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 0 20px rgba(255, 255, 255, 0.05) inset !important;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(255, 255, 255, 0.05) inset !important;
 }
 
 .search-input:hover {
   background: rgba(255, 255, 255, 0.15) !important;
-  border-color: #8C7DD1 !important;
+  border-color: #8c7dd1 !important;
 }
 
 .search-input:focus-within {
   background: rgba(255, 255, 255, 0.2) !important;
-  border-color: #8C7DD1 !important;
-  box-shadow: 0 4px 20px rgba(140, 125, 209, 0.3), 0 0 25px rgba(255, 255, 255, 0.1) inset !important;
+  border-color: #8c7dd1 !important;
+  box-shadow:
+    0 4px 20px rgba(140, 125, 209, 0.3),
+    0 0 25px rgba(255, 255, 255, 0.1) inset !important;
 }
 
 .search-input .ant-input {
@@ -492,7 +495,7 @@
 
 .add-recording-btn {
   background: rgba(255, 255, 255, 0.2) !important;
-  border: 1px solid #ACACE6 !important;
+  border: 1px solid #acace6 !important;
   color: white !important;
   backdrop-filter: blur(6px);
 }

@@ -12,17 +12,17 @@ jobs:
   build-and-release:
     name: Build and Release Sonorus DMG
     runs-on: macos-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          
+          node-version: "18"
+          cache: "npm"
+
       - name: Get package version and branch
         id: version
         run: |
@@ -42,23 +42,23 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "release_name=${RELEASE_NAME}" >> $GITHUB_OUTPUT
           echo "prerelease=${PRERELEASE}" >> $GITHUB_OUTPUT
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Build application
         run: npm run build:mac
         env:
           # Skip notarization for automated builds
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          
+
       - name: Find DMG file
         id: find_dmg
         run: |
           DMG_PATH=$(find dist -name "*.dmg" | head -1)
           echo "dmg_path=$DMG_PATH" >> $GITHUB_OUTPUT
           echo "dmg_name=$(basename $DMG_PATH)" >> $GITHUB_OUTPUT
-          
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -66,34 +66,34 @@ jobs:
           name: ${{ steps.version.outputs.release_name }}
           body: |
             ## ${{ steps.version.outputs.release_name }}
-            
+
             **Advanced cardiac screening platform for healthcare professionals**
-            
+
             ### Build Information
             - **Version**: ${{ steps.version.outputs.version }}
             - **Branch**: ${{ steps.version.outputs.branch }}
             - **Commit**: ${{ github.sha }}
             - **Build Date**: ${{ github.run_id }}
-            
+
             ### Features
             - 🫀 Comprehensive 4-valve heart sound recording (Aortic, Pulmonary, Tricuspid, Mitral)
             - 🎨 Modern glassmorphic design with light/dark themes
             - 🖥️ Full-screen native macOS application
             - 📊 Patient management and recording history
             - ⚙️ Advanced settings and configuration
-            
+
             ### Installation
             1. Download the DMG file below
             2. Open the DMG file
             3. Drag Sonorus.app to your Applications folder
             4. Launch Sonorus from Applications
-            
+
             ### System Requirements
             - macOS 10.15 or later
             - Apple Silicon (M1/M2) or Intel processor
-            
+
             ---
-            
+
             **Note**: This is an unsigned application. You may need to right-click and select "Open" the first time you launch it.
           files: |
             ${{ steps.find_dmg.outputs.dmg_path }}
@@ -102,7 +102,7 @@ jobs:
           prerelease: ${{ steps.version.outputs.prerelease }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
