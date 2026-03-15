@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Input, Select, DatePicker, Space, Tooltip, Modal } from "antd";
+import { message } from "antd";
 import {
   SearchOutlined,
   FilterOutlined,
@@ -39,6 +40,7 @@ import {
   getPatients,
   type ExtendedRecording,
 } from "../utils/storage";
+import { buildRecordingExportPayloads } from "../utils/exportRecordings";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -92,6 +94,7 @@ function RecordingsList(): JSX.Element {
   const [audioInstances, setAudioInstances] = useState<Map<number, HTMLAudioElement>>(
     new Map(),
   );
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadRecordings();
@@ -135,6 +138,36 @@ function RecordingsList(): JSX.Element {
       console.error("Error loading recordings:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportRecordings = async () => {
+    try {
+      setExporting(true);
+      const payloads = await buildRecordingExportPayloads();
+
+      if (!payloads.length) {
+        message.info("No recordings available to export.");
+        return;
+      }
+
+      const result = await window.api.exportRecordings(payloads);
+
+      if (result.success) {
+        const count = result.writtenFiles ?? 0;
+        message.success(
+          `Exported ${count} recording${count === 1 ? "" : "s"} successfully.`,
+        );
+      } else if (result.canceled) {
+        message.info("Export cancelled.");
+      } else {
+        message.error(result.error ?? "Failed to export recordings.");
+      }
+    } catch (error) {
+      console.error("Error exporting recordings:", error);
+      message.error("Failed to export recordings.");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -574,8 +607,15 @@ function RecordingsList(): JSX.Element {
         }
 
         // Remove event listeners to prevent memory leaks
-        audio.removeEventListener('ended', audio.onended);
-        audio.removeEventListener('error', audio.onerror);
+        if (audio.onended) {
+          audio.removeEventListener("ended", audio.onended);
+        }
+        if (audio.onerror) {
+          audio.removeEventListener(
+            "error",
+            audio.onerror as EventListenerOrEventListenerObject,
+          );
+        }
       }
 
       // Update state - remove from playing set and audio instances
@@ -608,7 +648,7 @@ function RecordingsList(): JSX.Element {
         <p className="text-white/70 text-lg mt-2">
           View and manage all heart sound recordings across all patients
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-3">
           <GlassButton
             variant="secondary"
             size="sm"
@@ -616,6 +656,14 @@ function RecordingsList(): JSX.Element {
             onClick={loadRecordings}
           >
             Refresh
+          </GlassButton>
+          <GlassButton
+            size="sm"
+            icon={<DownloadOutlined />}
+            onClick={handleExportRecordings}
+            disabled={exporting}
+          >
+            {exporting ? "Exporting..." : "Export Recordings"}
           </GlassButton>
         </div>
       </div>

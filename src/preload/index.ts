@@ -3,6 +3,10 @@ import { electronAPI } from "@electron-toolkit/preload";
 import { Repo } from "@shared/repo/data";
 import { IAPI } from "@shared/api";
 import { CommitFile } from "@shared/commit/data";
+import type {
+  RecordingExportBatchPayload,
+  RecordingExportResult,
+} from "@shared/recordings/types";
 
 // Custom APIs for renderer
 const { invoke } = ipcRenderer;
@@ -32,6 +36,11 @@ const api: IAPI = {
   },
   loadFile: (filepath: string): Promise<string> => {
     return ipcRenderer.invoke("system/loadFile", filepath);
+  },
+  exportRecordings: async (
+    payloads: RecordingExportBatchPayload[],
+  ): Promise<RecordingExportResult> => {
+    return ipcRenderer.invoke("system/exportRecordings", payloads);
   },
 };
 

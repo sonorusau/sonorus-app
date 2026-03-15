@@ -6,6 +6,7 @@ import {
   safeStorage,
   Menu,
   screen,
+  dialog,
 } from "electron";
 import { join } from "path";
 import { electronApp, optimizer, is } from "@electron-toolkit/utils";
@@ -22,6 +23,11 @@ import {
   encryptStoreDelete,
 } from "./system/encryptStore";
 import { loadFile } from "./system/loadFile";
+import * as fs from "fs/promises";
+import type {
+  RecordingExportBatchPayload,
+  RecordingExportResult,
+} from "@shared/recordings/types";
 
 function createWindow(): void {
   // Get screen dimensions
@@ -128,6 +134,61 @@ app.whenReady().then(() => {
   ipcMain.handle("system/encryptStoreGetAllKeys", async () => {
     return encryptStoreGetAllKeys();
   });
+
+  ipcMain.handle(
+    "system/exportRecordings",
+    async (
+      _event,
+      payloads: RecordingExportBatchPayload[],
+    ): Promise<RecordingExportResult> => {
+      try {
+        if (!payloads || payloads.length === 0) {
+          return {
+            success: false,
+            error: "No recordings available to export.",
+          };
+        }
+
+        const { canceled, filePaths } = await dialog.showOpenDialog({
+          title: "Select export destination",
+          properties: ["openDirectory", "createDirectory"],
+        });
+
+        if (canceled || !filePaths || filePaths.length === 0) {
+          return { success: false, canceled: true };
+        }
+
+        const rootDir = filePaths[0];
+        let writtenFiles = 0;
+
+        for (const payload of payloads) {
+          const patientDir = payload.patientDir;
+          const sessionDir = payload.sessionDir;
+          const targetBase = join(rootDir, patientDir, sessionDir);
+          await fs.mkdir(targetBase, { recursive: true });
+
+          for (const file of payload.files) {
+            const { fileName, arrayBuffer } = file;
+            const buffer = Buffer.from(arrayBuffer);
+            const targetPath = join(targetBase, fileName);
+            await fs.writeFile(targetPath, buffer);
+            writtenFiles += 1;
+          }
+        }
+
+        return { success: true, writtenFiles };
+      } catch (error) {
+        console.error("Failed to export recordings:", error);
+        return {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Unknown error occurred while exporting recordings.",
+        };
+      }
+    },
+  );
 
   const githubCloudKey = "githubCloud";
   const githubEnterpriseServerKey = "githubEnterpriseServer";

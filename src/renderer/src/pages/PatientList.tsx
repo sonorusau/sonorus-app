@@ -417,8 +417,15 @@ function PatientList(): JSX.Element {
         }
 
         // Remove event listeners to prevent memory leaks
-        audio.removeEventListener('ended', audio.onended);
-        audio.removeEventListener('error', audio.onerror);
+        if (audio.onended) {
+          audio.removeEventListener("ended", audio.onended);
+        }
+        if (audio.onerror) {
+          audio.removeEventListener(
+            "error",
+            audio.onerror as EventListenerOrEventListenerObject,
+          );
+        }
       }
 
       // Update state - remove from playing set and audio instances

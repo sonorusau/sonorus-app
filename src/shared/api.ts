@@ -1,4 +1,9 @@
 // Interfaces preserved for backend functionality
+import type {
+  RecordingExportBatchPayload,
+  RecordingExportResult,
+} from "./recordings/types";
+
 export interface IAPI {
   loadReposFromTxt: () => Promise<any[]>;
   exportRepostoTxt: (repos: any[]) => Promise<void>;
@@ -8,4 +13,7 @@ export interface IAPI {
   encryptStoreDelete: (key: string) => Promise<void>;
   encryptStoreSet: (key: string, value: string) => Promise<void>;
   loadFile: (filePath: string) => Promise<string>;
+  exportRecordings: (
+    payloads: RecordingExportBatchPayload[],
+  ) => Promise<RecordingExportResult>;
 }
