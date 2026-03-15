@@ -15,10 +15,13 @@ GUI tool for performing actions on GitHub repositories in bulk.
 ```bash
 $ npm install
 ```
+
 #### Environment Variables
+
 Add an `.env` file at project root.
 
 The file should contain the following env variables:
+
 ```bash
 # Your PAT for development usage with GitHub Enterprise Cloud (GHEC) REST API.
 RENDERER_VITE_GITHUB_TOKEN=MY_TOKEN
@@ -50,7 +53,8 @@ $ npm run build:linux
 
 #### `RequestError: Self-signed certificate in certificate chain`
 
-* Workaround
+- Workaround
+
 ```sh
 export NODE_TLS_REJECT_UNAUTHORIZED=0
 ```

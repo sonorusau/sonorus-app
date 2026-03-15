@@ -22,9 +22,9 @@
   --ev-c-text-2: rgba(235, 235, 245, 0.6);
   --ev-c-text-3: rgba(235, 235, 245, 0.38);
   --ev-c-text-5: rgba(0, 0, 0, 0.86);
-  --ev-c-text-6: #004C4C;
+  --ev-c-text-6: #004c4c;
 
-  --ev-c-teal: #66B2B2;
+  --ev-c-teal: #66b2b2;
 
   --ev-button-alt-border: transparent;
   --ev-button-alt-text: var(--ev-c-text-1);
@@ -78,15 +78,20 @@ body {
   color: var(--color-text);
   background: var(--color-background);
   line-height: var(--leading-normal, 1.5);
-  font-family: var(--font-body, 'Figtree', 'Outfit', system-ui, sans-serif);
+  font-family: var(--font-body, "Figtree", "Outfit", system-ui, sans-serif);
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Typography defaults */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display, 'Plus Jakarta Sans', system-ui, sans-serif);
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display, "Plus Jakarta Sans", system-ui, sans-serif);
   font-weight: 600;
   letter-spacing: var(--tracking-tight, -0.025em);
   line-height: var(--leading-tight, 1.25);
