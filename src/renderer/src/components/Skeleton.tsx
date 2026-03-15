@@ -59,17 +59,20 @@ export function PatientDetailSkeleton(): JSX.Element {
           <div className="h-4 w-32 skeleton rounded" />
         </div>
       </div>
-      
+
       {/* Quick stats skeleton */}
       <div className="grid grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/10">
+          <div
+            key={i}
+            className="bg-white/5 rounded-xl p-4 border border-white/10"
+          >
             <div className="h-8 w-12 skeleton rounded mb-2 mx-auto" />
             <div className="h-3 w-16 skeleton rounded mx-auto" />
           </div>
         ))}
       </div>
-      
+
       {/* Details section skeleton */}
       <div className="border border-white/10 rounded-xl overflow-hidden">
         <div className="bg-white/5 px-5 py-3">
@@ -84,7 +87,7 @@ export function PatientDetailSkeleton(): JSX.Element {
           ))}
         </div>
       </div>
-      
+
       {/* Recordings section skeleton */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -128,7 +131,10 @@ export function ListSkeleton({ count = 5 }: { count?: number }): JSX.Element {
   return (
     <div className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10">
+        <div
+          key={i}
+          className="p-4 rounded-xl bg-white/5 border border-white/10"
+        >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg skeleton" />
             <div className="flex-1 space-y-2">
@@ -143,4 +149,3 @@ export function ListSkeleton({ count = 5 }: { count?: number }): JSX.Element {
 }
 
 export default Skeleton;
-

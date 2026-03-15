@@ -51,10 +51,14 @@ function GlassButton({
   };
 
   const hoverClasses: Record<string, string> = {
-    primary: "hover:bg-[rgba(116,74,161,0.35)] hover:shadow-[0_0_20px_rgba(116,74,161,0.4)]",
-    secondary: "hover:bg-[var(--glass-bg-elevated)] hover:border-[var(--glass-border-prominent)]",
-    danger: "hover:bg-[rgba(143,15,34,0.3)] hover:shadow-[0_0_20px_rgba(143,15,34,0.3)]",
-    success: "hover:bg-[rgba(114,197,133,0.3)] hover:shadow-[0_0_20px_rgba(114,197,133,0.3)]",
+    primary:
+      "hover:bg-[rgba(116,74,161,0.35)] hover:shadow-[0_0_20px_rgba(116,74,161,0.4)]",
+    secondary:
+      "hover:bg-[var(--glass-bg-elevated)] hover:border-[var(--glass-border-prominent)]",
+    danger:
+      "hover:bg-[rgba(143,15,34,0.3)] hover:shadow-[0_0_20px_rgba(143,15,34,0.3)]",
+    success:
+      "hover:bg-[rgba(114,197,133,0.3)] hover:shadow-[0_0_20px_rgba(114,197,133,0.3)]",
     ghost: "hover:bg-[var(--glass-bg-subtle)]",
   };
 

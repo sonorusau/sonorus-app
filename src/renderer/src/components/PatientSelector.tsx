@@ -169,7 +169,11 @@ const PatientSelector: React.FC<PatientSelectorProps> = ({
         )}
       >
         {patients.map((patient) => (
-          <Option key={patient.id} value={patient.id} label={patient.name}>
+          <Option
+            key={patient.id}
+            value={patient.id}
+            label={`${patient.name} ${patient.patient_uid}`}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <UserOutlined />
               <span>{patient.name}</span>

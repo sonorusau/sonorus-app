@@ -35,9 +35,9 @@ const useAudioPlayback = (): UseAudioPlaybackResult => {
   const [audioAnalysers, setAudioAnalysers] = useState<
     Map<number, AnalyserNode>
   >(new Map());
-  const [audioContexts, setAudioContexts] = useState<
-    Map<number, AudioContext>
-  >(new Map());
+  const [audioContexts, setAudioContexts] = useState<Map<number, AudioContext>>(
+    new Map(),
+  );
   const [recordingProgress, setRecordingProgress] = useState<
     Map<number, RecordingProgress>
   >(new Map());
@@ -390,9 +390,7 @@ const useAudioPlayback = (): UseAudioPlaybackResult => {
         // Clamp to duration if available
         const progress = recordingProgress.get(recordingId);
         const maxValue =
-          progress &&
-          isFinite(progress.duration) &&
-          progress.duration > 0
+          progress && isFinite(progress.duration) && progress.duration > 0
             ? progress.duration
             : validValue;
 
@@ -425,7 +423,13 @@ const useAudioPlayback = (): UseAudioPlaybackResult => {
         await playRecording(recordingId, audioBlob);
       }
     },
-    [playingRecordings, pausedRecordings, playRecording, pauseRecording, resumeRecording],
+    [
+      playingRecordings,
+      pausedRecordings,
+      playRecording,
+      pauseRecording,
+      resumeRecording,
+    ],
   );
 
   return {
@@ -443,4 +447,3 @@ const useAudioPlayback = (): UseAudioPlaybackResult => {
 };
 
 export default useAudioPlayback;
-

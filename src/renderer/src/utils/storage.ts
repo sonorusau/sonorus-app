@@ -191,20 +191,25 @@ const initDB = async (): Promise<void> => {
   if (!dbInitPromise) {
     dbInitPromise = (async () => {
       await db.init();
-      
+
       // Check and seed Trevin Wadu in the background (non-blocking)
       // This ensures Trevin Wadu always exists for demo purposes
       setTimeout(async () => {
         try {
-          const { checkAndSeedTrevinWadu } = await import('./mockData');
+          const { checkAndSeedTrevinWadu } = await import("./mockData");
           const seeded = await checkAndSeedTrevinWadu();
           if (seeded) {
-            console.log('🎉 Trevin Wadu seeded successfully during database initialization');
+            console.log(
+              "🎉 Trevin Wadu seeded successfully during database initialization",
+            );
           } else {
-            console.log('✅ Trevin Wadu already exists in database');
+            console.log("✅ Trevin Wadu already exists in database");
           }
         } catch (error) {
-          console.warn('⚠️ Failed to check/seed Trevin Wadu in background:', error);
+          console.warn(
+            "⚠️ Failed to check/seed Trevin Wadu in background:",
+            error,
+          );
           // Don't throw - just continue without mock data
         }
       }, 500); // Slightly longer delay to ensure database is fully initialized
@@ -563,4 +568,8 @@ export const importData = async (jsonData: string): Promise<void> => {
 initDB().catch(console.error);
 
 // Re-export mock data functions for external use
-export { seedMockDataIfEmpty, forceSeedMockData, checkAndSeedTrevinWadu } from './mockData';
+export {
+  seedMockDataIfEmpty,
+  forceSeedMockData,
+  checkAndSeedTrevinWadu,
+} from "./mockData";

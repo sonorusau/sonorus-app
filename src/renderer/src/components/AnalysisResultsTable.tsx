@@ -1,6 +1,10 @@
 import React from "react";
 import { Table } from "antd";
-import { CheckCircleOutlined, ExclamationCircleOutlined, WarningOutlined } from "@ant-design/icons";
+import {
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  WarningOutlined,
+} from "@ant-design/icons";
 import GlassCard from "./GlassCard";
 import Title from "antd/es/typography/Title";
 import type { ComprehensiveAnalysisResult } from "../types/HeartAnalysis";
@@ -9,8 +13,16 @@ interface AnalysisResultsTableProps {
   analysisResult: ComprehensiveAnalysisResult;
 }
 
-function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JSX.Element {
-  const { patient, valve_analyses, skin_barriers, overall_assessment, recommendations } = analysisResult;
+function AnalysisResultsTable({
+  analysisResult,
+}: AnalysisResultsTableProps): JSX.Element {
+  const {
+    patient,
+    valve_analyses,
+    skin_barriers,
+    overall_assessment,
+    recommendations,
+  } = analysisResult;
 
   // Calculate patient age from DOB
   const calculateAge = (dob: string): number => {
@@ -18,7 +30,10 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
@@ -69,7 +84,9 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
       key: "valve",
       render: (valve: string) => (
         <div className="flex items-center gap-2">
-          <span className="text-white font-medium">{formatValveName(valve)}</span>
+          <span className="text-white font-medium">
+            {formatValveName(valve)}
+          </span>
         </div>
       ),
     },
@@ -87,7 +104,7 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
     },
     {
       title: "Stenosis",
-      dataIndex: "stenosis_percentage", 
+      dataIndex: "stenosis_percentage",
       key: "stenosis",
       render: (percentage: number) => (
         <div className="text-center">
@@ -104,7 +121,7 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
       render: (severity: string) => (
         <div className="flex items-center justify-center gap-2">
           {getSeverityIcon(severity)}
-          <span 
+          <span
             className="font-medium text-sm"
             style={{ color: getSeverityColor(severity) }}
           >
@@ -142,12 +159,16 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
             </div>
             <div className="text-center">
               <div className="text-white/60 text-sm">Age</div>
-              <div className="text-white font-semibold">{calculateAge(patient.dob)} years old</div>
+              <div className="text-white font-semibold">
+                {calculateAge(patient.dob)} years old
+              </div>
             </div>
             <div className="text-center">
               <div className="text-white/60 text-sm">Session Time</div>
               <div className="text-white font-semibold">
-                {new Date(analysisResult.session_timestamp).toLocaleTimeString()}
+                {new Date(
+                  analysisResult.session_timestamp,
+                ).toLocaleTimeString()}
               </div>
             </div>
           </div>
@@ -162,7 +183,10 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {skin_barriers.map((barrier, index) => (
-                  <div key={index} className="text-center p-2 rounded bg-yellow-500/20">
+                  <div
+                    key={index}
+                    className="text-center p-2 rounded bg-yellow-500/20"
+                  >
                     <div className="text-yellow-300 text-xs font-medium">
                       {barrier.level} {barrier.option}
                     </div>
@@ -183,7 +207,7 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
             style={{
               backgroundColor: "rgba(255,255,255,0.05)",
               borderRadius: "8px",
-              overflow: "hidden"
+              overflow: "hidden",
             }}
           />
         </div>
@@ -191,7 +215,9 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
         {/* Overall Assessment */}
         <div className="mb-6">
           <div className="p-4 rounded-lg bg-white/10 border border-white/20">
-            <div className="text-white/70 text-sm font-medium mb-2">Overall Assessment:</div>
+            <div className="text-white/70 text-sm font-medium mb-2">
+              Overall Assessment:
+            </div>
             <div className="text-white text-base">{overall_assessment}</div>
           </div>
         </div>
@@ -200,10 +226,15 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
         {recommendations.length > 0 && (
           <div className="mb-4">
             <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-              <div className="text-blue-400 text-sm font-medium mb-3">Clinical Recommendations:</div>
+              <div className="text-blue-400 text-sm font-medium mb-3">
+                Clinical Recommendations:
+              </div>
               <ul className="space-y-2">
                 {recommendations.map((recommendation, index) => (
-                  <li key={index} className="text-blue-300 text-sm flex items-start gap-2">
+                  <li
+                    key={index}
+                    className="text-blue-300 text-sm flex items-start gap-2"
+                  >
                     <span className="text-blue-400 mt-1">•</span>
                     <span>{recommendation}</span>
                   </li>
@@ -216,7 +247,8 @@ function AnalysisResultsTable({ analysisResult }: AnalysisResultsTableProps): JS
         {/* Analysis Timestamp */}
         <div className="text-center">
           <div className="text-white/50 text-xs">
-            Analysis completed: {new Date(analysisResult.analysis_timestamp).toLocaleString()}
+            Analysis completed:{" "}
+            {new Date(analysisResult.analysis_timestamp).toLocaleString()}
           </div>
         </div>
       </GlassCard>

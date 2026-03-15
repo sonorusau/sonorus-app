@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Modal, Form, DatePicker, message, Tooltip, Slider } from "antd";
+import {
+  Input,
+  Button,
+  Modal,
+  Form,
+  DatePicker,
+  message,
+  Tooltip,
+  Slider,
+} from "antd";
 import {
   SearchOutlined,
   PlusOutlined,
@@ -21,7 +30,11 @@ import ConfirmationModal, {
 } from "../components/ConfirmationModal";
 import AudioWaveform from "../components/AudioWaveform";
 import useAudioPlayback from "../hooks/useAudioPlayback";
-import { PatientCardSkeleton, PatientDetailSkeleton, RecordingCardSkeleton } from "../components/Skeleton";
+import {
+  PatientCardSkeleton,
+  PatientDetailSkeleton,
+  RecordingCardSkeleton,
+} from "../components/Skeleton";
 import EmptyState from "../components/EmptyState";
 import Title from "antd/es/typography/Title";
 import type Patient from "../types/Patient";
@@ -447,9 +460,15 @@ function PatientList(): JSX.Element {
     }
   };
 
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredPatients = patients.filter((patient) => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return true;
+    return (
+      patient.name.toLowerCase().includes(query) ||
+      patient.patient_uid.toLowerCase().includes(query) ||
+      String(patient.id).includes(query)
+    );
+  });
 
   return (
     <div className="patient-select-container">
@@ -463,7 +482,7 @@ function PatientList(): JSX.Element {
             <Input
               className="search-input"
               size="large"
-              placeholder="Search patients..."
+              placeholder="Search by name or patient ID..."
               prefix={<SearchOutlined className="text-white/60" />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -494,7 +513,11 @@ function PatientList(): JSX.Element {
               <EmptyState
                 type="patients"
                 title={searchTerm ? "No matching patients" : "No patients yet"}
-                description={searchTerm ? "Try a different search term" : "Add your first patient to start recording heart sounds."}
+                description={
+                  searchTerm
+                    ? "Try a different search term"
+                    : "Add your first patient to start recording heart sounds."
+                }
                 actionLabel={!searchTerm ? "Add New Patient" : undefined}
                 onAction={!searchTerm ? handleAddNewPatient : undefined}
               />
@@ -541,7 +564,9 @@ function PatientList(): JSX.Element {
                   {selectedPatient.name.charAt(0)}
                 </div>
                 <div className="flex-1">
-                  <h1 className="patient-title text-heading">{selectedPatient.name}</h1>
+                  <h1 className="patient-title text-heading">
+                    {selectedPatient.name}
+                  </h1>
                   <p className="text-white/60 text-sm">
                     Patient ID: {selectedPatient.patient_uid}
                   </p>
@@ -571,17 +596,36 @@ function PatientList(): JSX.Element {
             <div className="grid grid-cols-4 gap-3 mb-8">
               {[
                 { value: patientBatches.length, label: "Sessions" },
-                { value: patientBatches.reduce((acc, b) => acc + (b.recordings?.length || 0), 0), label: "Recordings" },
-                { value: `${selectedPatient.patient_details.height}cm`, label: "Height" },
-                { value: `${selectedPatient.patient_details.weight}kg`, label: "Weight" },
+                {
+                  value: patientBatches.reduce(
+                    (acc, b) => acc + (b.recordings?.length || 0),
+                    0,
+                  ),
+                  label: "Recordings",
+                },
+                {
+                  value: `${selectedPatient.patient_details.height}cm`,
+                  label: "Height",
+                },
+                {
+                  value: `${selectedPatient.patient_details.weight}kg`,
+                  label: "Weight",
+                },
               ].map((stat, i) => (
-                <div 
+                <div
                   key={i}
                   className="rounded-xl p-4 text-center border border-white/[0.08]"
-                  style={{ background: "linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02))" }}
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02))",
+                  }}
                 >
-                  <p className="text-xl font-semibold text-white">{stat.value}</p>
-                  <p className="text-xs text-white/50 uppercase tracking-wider mt-1">{stat.label}</p>
+                  <p className="text-xl font-semibold text-white">
+                    {stat.value}
+                  </p>
+                  <p className="text-xs text-white/50 uppercase tracking-wider mt-1">
+                    {stat.label}
+                  </p>
                 </div>
               ))}
             </div>
@@ -598,11 +642,15 @@ function PatientList(): JSX.Element {
               <div className="p-5 grid grid-cols-2 gap-x-8 gap-y-4">
                 <div>
                   <p className="text-label text-white/50 mb-1">Date of Birth</p>
-                  <p className="text-white">{new Date(selectedPatient.dob).toLocaleDateString()}</p>
+                  <p className="text-white">
+                    {new Date(selectedPatient.dob).toLocaleDateString()}
+                  </p>
                 </div>
                 <div>
                   <p className="text-label text-white/50 mb-1">Patient UID</p>
-                  <p className="text-white font-mono text-sm">{selectedPatient.patient_uid}</p>
+                  <p className="text-white font-mono text-sm">
+                    {selectedPatient.patient_uid}
+                  </p>
                 </div>
                 <div>
                   <p className="text-label text-white/50 mb-1">Conditions</p>
@@ -623,7 +671,6 @@ function PatientList(): JSX.Element {
               </div>
             </section>
           )}
-
 
           {/* Recording Sessions Section */}
           {selectedPatient && !loading && (
@@ -811,120 +858,175 @@ function PatientList(): JSX.Element {
                                           </div>
                                         </div>
                                         <div className="recording-actions flex items-center gap-2 ml-4">
-                                      <Tooltip
-                                        title={
-                                          playingRecordings.has(recording.id)
-                                            ? "Pause Recording"
-                                            : pausedRecordings.has(recording.id)
-                                              ? "Resume Recording"
-                                              : "Play Recording"
-                                        }
-                                      >
-                                        <GlassButton
-                                          size="sm"
-                                          variant="secondary"
-                                          icon={
-                                            playingRecordings.has(recording.id) ? (
-                                              <PauseCircleOutlined
-                                                className="text-green-400"
-                                              />
-                                            ) : pausedRecordings.has(recording.id) ? (
-                                              <PlayCircleOutlined
-                                                className="text-yellow-400"
-                                              />
-                                            ) : (
-                                              <PlayCircleOutlined />
-                                            )
-                                          }
-                                          onClick={() =>
-                                            handlePlayPauseRecording(recording)
-                                          }
-                                        />
-                                      </Tooltip>
-                                      <Tooltip title="Download">
-                                        <GlassButton
-                                          size="sm"
-                                          variant="secondary"
-                                          icon={<DownloadOutlined />}
-                                          onClick={() =>
-                                            handleDownloadRecording(recording)
-                                          }
-                                        />
-                                      </Tooltip>
-                                      <Tooltip title="Delete Recording">
-                                        <GlassButton
-                                          size="sm"
-                                          variant="danger"
-                                          icon={<DeleteOutlined />}
-                                          onClick={() =>
-                                            handleDeleteIndividualRecording(
-                                              recording.id,
-                                            )
-                                          }
-                                        />
-                                      </Tooltip>
-                                    </div>
-                                    </div>
-                                    
-                                    {/* Waveform visualization when playing or paused */}
-                                    {(playingRecordings.has(recording.id) || pausedRecordings.has(recording.id)) && (
-                                      <div className="mt-3 w-full flex flex-col items-center gap-3">
-                                        <div className="w-full flex justify-center">
-                                          <AudioWaveform
-                                            isActive={playingRecordings.has(recording.id)}
-                                            analyser={audioAnalysers.get(recording.id) || null}
-                                          />
-                                        </div>
-                                        
-                                        {/* Seek control */}
-                                        {(() => {
-                                          const progress = recordingProgress.get(recording.id);
-                                          // Validate duration - must be finite, positive, and not NaN
-                                          const isValidDuration = progress && 
-                                            isFinite(progress.duration) && 
-                                            progress.duration > 0 && 
-                                            !isNaN(progress.duration);
-                                          
-                                          if (isValidDuration) {
-                                            const formatTime = (seconds: number) => {
-                                              // Handle invalid values
-                                              if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
-                                                return "0:00";
+                                          <Tooltip
+                                            title={
+                                              playingRecordings.has(
+                                                recording.id,
+                                              )
+                                                ? "Pause Recording"
+                                                : pausedRecordings.has(
+                                                      recording.id,
+                                                    )
+                                                  ? "Resume Recording"
+                                                  : "Play Recording"
+                                            }
+                                          >
+                                            <GlassButton
+                                              size="sm"
+                                              variant="secondary"
+                                              icon={
+                                                playingRecordings.has(
+                                                  recording.id,
+                                                ) ? (
+                                                  <PauseCircleOutlined className="text-green-400" />
+                                                ) : pausedRecordings.has(
+                                                    recording.id,
+                                                  ) ? (
+                                                  <PlayCircleOutlined className="text-yellow-400" />
+                                                ) : (
+                                                  <PlayCircleOutlined />
+                                                )
                                               }
-                                              const mins = Math.floor(seconds / 60);
-                                              const secs = Math.floor(seconds % 60);
-                                              return `${mins}:${secs.toString().padStart(2, '0')}`;
-                                            };
-                                            
-                                            return (
-                                              <div className="w-full max-w-md px-4">
-                                                <Slider
-                                                  min={0}
-                                                  max={progress.duration}
-                                                  value={Math.min(progress.current, progress.duration)}
-                                                  onChange={(value) => handleSeekRecording(recording.id, value)}
-                                                  tooltip={{
-                                                    formatter: (value) => formatTime(value || 0),
-                                                  }}
-                                                  styles={{
-                                                    track: { backgroundColor: 'rgba(140, 125, 209, 0.5)' },
-                                                    rail: { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
-                                                    handle: { borderColor: 'rgba(140, 125, 209, 0.8)' },
-                                                  }}
-                                                />
-                                                <div className="flex justify-between text-xs text-white/70 mt-1">
-                                                  <span>{formatTime(progress.current)}</span>
-                                                  <span>{formatTime(progress.duration)}</span>
-                                                </div>
-                                              </div>
-                                            );
-                                          }
-                                          // Show waveform even if duration is not available yet
-                                          return null;
-                                        })()}
+                                              onClick={() =>
+                                                handlePlayPauseRecording(
+                                                  recording,
+                                                )
+                                              }
+                                            />
+                                          </Tooltip>
+                                          <Tooltip title="Download">
+                                            <GlassButton
+                                              size="sm"
+                                              variant="secondary"
+                                              icon={<DownloadOutlined />}
+                                              onClick={() =>
+                                                handleDownloadRecording(
+                                                  recording,
+                                                )
+                                              }
+                                            />
+                                          </Tooltip>
+                                          <Tooltip title="Delete Recording">
+                                            <GlassButton
+                                              size="sm"
+                                              variant="danger"
+                                              icon={<DeleteOutlined />}
+                                              onClick={() =>
+                                                handleDeleteIndividualRecording(
+                                                  recording.id,
+                                                )
+                                              }
+                                            />
+                                          </Tooltip>
+                                        </div>
                                       </div>
-                                    )}
-                                  </div>
+
+                                      {/* Waveform visualization when playing or paused */}
+                                      {(playingRecordings.has(recording.id) ||
+                                        pausedRecordings.has(recording.id)) && (
+                                        <div className="mt-3 w-full flex flex-col items-center gap-3">
+                                          <div className="w-full flex justify-center">
+                                            <AudioWaveform
+                                              isActive={playingRecordings.has(
+                                                recording.id,
+                                              )}
+                                              analyser={
+                                                audioAnalysers.get(
+                                                  recording.id,
+                                                ) || null
+                                              }
+                                            />
+                                          </div>
+
+                                          {/* Seek control */}
+                                          {(() => {
+                                            const progress =
+                                              recordingProgress.get(
+                                                recording.id,
+                                              );
+                                            // Validate duration - must be finite, positive, and not NaN
+                                            const isValidDuration =
+                                              progress &&
+                                              isFinite(progress.duration) &&
+                                              progress.duration > 0 &&
+                                              !isNaN(progress.duration);
+
+                                            if (isValidDuration) {
+                                              const formatTime = (
+                                                seconds: number,
+                                              ) => {
+                                                // Handle invalid values
+                                                if (
+                                                  !isFinite(seconds) ||
+                                                  isNaN(seconds) ||
+                                                  seconds < 0
+                                                ) {
+                                                  return "0:00";
+                                                }
+                                                const mins = Math.floor(
+                                                  seconds / 60,
+                                                );
+                                                const secs = Math.floor(
+                                                  seconds % 60,
+                                                );
+                                                return `${mins}:${secs.toString().padStart(2, "0")}`;
+                                              };
+
+                                              return (
+                                                <div className="w-full max-w-md px-4">
+                                                  <Slider
+                                                    min={0}
+                                                    max={progress.duration}
+                                                    value={Math.min(
+                                                      progress.current,
+                                                      progress.duration,
+                                                    )}
+                                                    onChange={(value) =>
+                                                      handleSeekRecording(
+                                                        recording.id,
+                                                        value,
+                                                      )
+                                                    }
+                                                    tooltip={{
+                                                      formatter: (value) =>
+                                                        formatTime(value || 0),
+                                                    }}
+                                                    styles={{
+                                                      track: {
+                                                        backgroundColor:
+                                                          "rgba(140, 125, 209, 0.5)",
+                                                      },
+                                                      rail: {
+                                                        backgroundColor:
+                                                          "rgba(255, 255, 255, 0.2)",
+                                                      },
+                                                      handle: {
+                                                        borderColor:
+                                                          "rgba(140, 125, 209, 0.8)",
+                                                      },
+                                                    }}
+                                                  />
+                                                  <div className="flex justify-between text-xs text-white/70 mt-1">
+                                                    <span>
+                                                      {formatTime(
+                                                        progress.current,
+                                                      )}
+                                                    </span>
+                                                    <span>
+                                                      {formatTime(
+                                                        progress.duration,
+                                                      )}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            // Show waveform even if duration is not available yet
+                                            return null;
+                                          })()}
+                                        </div>
+                                      )}
+                                    </div>
                                   </GlassCard>
                                 ))
                               ) : (
@@ -963,7 +1065,7 @@ function PatientList(): JSX.Element {
         <div className="p-2">
           {/* Modal Header */}
           <div className="flex items-center gap-4 mb-6">
-            <div 
+            <div
               className="w-12 h-12 rounded-xl flex items-center justify-center"
               style={{ background: "rgb(116, 74, 161)" }}
             >
@@ -979,7 +1081,12 @@ function PatientList(): JSX.Element {
             </div>
           </div>
 
-          <Form form={form} layout="vertical" requiredMark={false} className="new-patient-form">
+          <Form
+            form={form}
+            layout="vertical"
+            requiredMark={false}
+            className="new-patient-form"
+          >
             {/* Basic Information Section */}
             <div className="form-section mb-6">
               <div className="flex items-center gap-2 mb-4">
@@ -988,19 +1095,21 @@ function PatientList(): JSX.Element {
                   Basic Information
                 </span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item
                   name="name"
-                  label={<span className="text-white/90 font-medium">Full Name</span>}
+                  label={
+                    <span className="text-white/90 font-medium">Full Name</span>
+                  }
                   rules={[
                     { required: true, message: "Please enter patient name" },
                     { min: 2, message: "Name must be at least 2 characters" },
                   ]}
                   className="col-span-2"
                 >
-                  <Input 
-                    placeholder="Enter patient's full name" 
+                  <Input
+                    placeholder="Enter patient's full name"
                     size="large"
                     className="modal-input"
                   />
@@ -1008,8 +1117,14 @@ function PatientList(): JSX.Element {
 
                 <Form.Item
                   name="dob"
-                  label={<span className="text-white/90 font-medium">Date of Birth</span>}
-                  rules={[{ required: true, message: "Please select date of birth" }]}
+                  label={
+                    <span className="text-white/90 font-medium">
+                      Date of Birth
+                    </span>
+                  }
+                  rules={[
+                    { required: true, message: "Please select date of birth" },
+                  ]}
                 >
                   <DatePicker
                     style={{ width: "100%" }}
@@ -1022,14 +1137,18 @@ function PatientList(): JSX.Element {
 
                 <Form.Item
                   name="patient_uid"
-                  label={<span className="text-white/90 font-medium">Patient ID</span>}
+                  label={
+                    <span className="text-white/90 font-medium">
+                      Patient ID
+                    </span>
+                  }
                   rules={[
                     { required: true, message: "Please enter patient ID" },
                     { min: 3, message: "ID must be at least 3 characters" },
                   ]}
                 >
-                  <Input 
-                    placeholder="Unique identifier" 
+                  <Input
+                    placeholder="Unique identifier"
                     size="large"
                     className="modal-input"
                   />
@@ -1045,11 +1164,13 @@ function PatientList(): JSX.Element {
                   Physical Measurements
                 </span>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <Form.Item
                   name="height"
-                  label={<span className="text-white/90 font-medium">Height</span>}
+                  label={
+                    <span className="text-white/90 font-medium">Height</span>
+                  }
                   rules={[
                     { required: true, message: "Required" },
                     {
@@ -1060,9 +1181,9 @@ function PatientList(): JSX.Element {
                     },
                   ]}
                 >
-                  <Input 
-                    type="number" 
-                    placeholder="Height" 
+                  <Input
+                    type="number"
+                    placeholder="Height"
                     size="large"
                     suffix={<span className="text-white/40">cm</span>}
                     className="modal-input"
@@ -1071,7 +1192,9 @@ function PatientList(): JSX.Element {
 
                 <Form.Item
                   name="weight"
-                  label={<span className="text-white/90 font-medium">Weight</span>}
+                  label={
+                    <span className="text-white/90 font-medium">Weight</span>
+                  }
                   rules={[
                     { required: true, message: "Required" },
                     {
@@ -1082,9 +1205,9 @@ function PatientList(): JSX.Element {
                     },
                   ]}
                 >
-                  <Input 
-                    type="number" 
-                    placeholder="Weight" 
+                  <Input
+                    type="number"
+                    placeholder="Weight"
                     size="large"
                     suffix={<span className="text-white/40">kg</span>}
                     className="modal-input"
@@ -1102,35 +1225,51 @@ function PatientList(): JSX.Element {
                 </span>
                 <span className="text-xs text-white/40 ml-auto">Optional</span>
               </div>
-              
+
               <div className="space-y-4">
                 <Form.Item
                   name="conditions"
-                  label={<span className="text-white/90 font-medium">Medical Conditions</span>}
+                  label={
+                    <span className="text-white/90 font-medium">
+                      Medical Conditions
+                    </span>
+                  }
                 >
                   <Input.TextArea
                     placeholder="e.g., Hypertension, Diabetes Type 2, Atrial Fibrillation"
                     rows={2}
                     className="modal-input"
                   />
-                  <p className="text-white/40 text-xs mt-1">Separate multiple conditions with commas</p>
+                  <p className="text-white/40 text-xs mt-1">
+                    Separate multiple conditions with commas
+                  </p>
                 </Form.Item>
 
                 <Form.Item
                   name="medications"
-                  label={<span className="text-white/90 font-medium">Current Medications</span>}
+                  label={
+                    <span className="text-white/90 font-medium">
+                      Current Medications
+                    </span>
+                  }
                 >
                   <Input.TextArea
                     placeholder="e.g., Aspirin 81mg, Lisinopril 10mg, Metformin 500mg"
                     rows={2}
                     className="modal-input"
                   />
-                  <p className="text-white/40 text-xs mt-1">Include dosage if known</p>
+                  <p className="text-white/40 text-xs mt-1">
+                    Include dosage if known
+                  </p>
                 </Form.Item>
 
                 <Form.Item
                   name="notes"
-                  label={<span className="text-white/90 font-medium">Additional Notes</span>}
+                  label={
+                    <span className="text-white/90 font-medium">
+                      Additional Notes
+                    </span>
+                  }
                 >
                   <Input.TextArea
                     placeholder="Allergies, special considerations, or other relevant information"
@@ -1143,10 +1282,7 @@ function PatientList(): JSX.Element {
 
             {/* Action Buttons */}
             <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-              <GlassButton
-                variant="secondary"
-                onClick={handleModalCancel}
-              >
+              <GlassButton variant="secondary" onClick={handleModalCancel}>
                 Cancel
               </GlassButton>
               <GlassButton

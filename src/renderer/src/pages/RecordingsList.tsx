@@ -899,9 +899,13 @@ function RecordingsList(): JSX.Element {
                                         <div className="flex items-center gap-2 ml-4">
                                           <Tooltip
                                             title={
-                                              playingRecordings.has(recording.id)
+                                              playingRecordings.has(
+                                                recording.id,
+                                              )
                                                 ? "Pause Recording"
-                                                : pausedRecordings.has(recording.id)
+                                                : pausedRecordings.has(
+                                                      recording.id,
+                                                    )
                                                   ? "Resume Recording"
                                                   : "Play Recording"
                                             }
@@ -910,20 +914,22 @@ function RecordingsList(): JSX.Element {
                                               variant="secondary"
                                               size="sm"
                                               icon={
-                                                playingRecordings.has(recording.id) ? (
-                                                  <PauseCircleOutlined
-                                                    className="text-green-400"
-                                                  />
-                                                ) : pausedRecordings.has(recording.id) ? (
-                                                  <PlayCircleOutlined
-                                                    className="text-yellow-400"
-                                                  />
+                                                playingRecordings.has(
+                                                  recording.id,
+                                                ) ? (
+                                                  <PauseCircleOutlined className="text-green-400" />
+                                                ) : pausedRecordings.has(
+                                                    recording.id,
+                                                  ) ? (
+                                                  <PlayCircleOutlined className="text-yellow-400" />
                                                 ) : (
                                                   <PlayCircleOutlined />
                                                 )
                                               }
                                               onClick={() =>
-                                                handlePlayPauseRecording(recording)
+                                                handlePlayPauseRecording(
+                                                  recording,
+                                                )
                                               }
                                             />
                                           </Tooltip>
@@ -933,7 +939,9 @@ function RecordingsList(): JSX.Element {
                                               size="sm"
                                               icon={<DownloadOutlined />}
                                               onClick={() =>
-                                                handleDownloadRecording(recording)
+                                                handleDownloadRecording(
+                                                  recording,
+                                                )
                                               }
                                             />
                                           </Tooltip>
@@ -951,56 +959,103 @@ function RecordingsList(): JSX.Element {
                                           </Tooltip>
                                         </div>
                                       </div>
-                                      
+
                                       {/* Waveform visualization when playing or paused */}
-                                      {(playingRecordings.has(recording.id) || pausedRecordings.has(recording.id)) && (
+                                      {(playingRecordings.has(recording.id) ||
+                                        pausedRecordings.has(recording.id)) && (
                                         <div className="mt-3 w-full flex flex-col items-center gap-3">
                                           <div className="w-full flex justify-center">
                                             <AudioWaveform
-                                              isActive={playingRecordings.has(recording.id)}
-                                              analyser={audioAnalysers.get(recording.id) || null}
+                                              isActive={playingRecordings.has(
+                                                recording.id,
+                                              )}
+                                              analyser={
+                                                audioAnalysers.get(
+                                                  recording.id,
+                                                ) || null
+                                              }
                                             />
                                           </div>
-                                          
+
                                           {/* Seek control */}
                                           {(() => {
-                                            const progress = recordingProgress.get(recording.id);
+                                            const progress =
+                                              recordingProgress.get(
+                                                recording.id,
+                                              );
                                             // Validate duration - must be finite, positive, and not NaN
-                                            const isValidDuration = progress && 
-                                              isFinite(progress.duration) && 
-                                              progress.duration > 0 && 
+                                            const isValidDuration =
+                                              progress &&
+                                              isFinite(progress.duration) &&
+                                              progress.duration > 0 &&
                                               !isNaN(progress.duration);
-                                            
+
                                             if (isValidDuration) {
-                                              const formatTime = (seconds: number) => {
+                                              const formatTime = (
+                                                seconds: number,
+                                              ) => {
                                                 // Handle invalid values
-                                                if (!isFinite(seconds) || isNaN(seconds) || seconds < 0) {
+                                                if (
+                                                  !isFinite(seconds) ||
+                                                  isNaN(seconds) ||
+                                                  seconds < 0
+                                                ) {
                                                   return "0:00";
                                                 }
-                                                const mins = Math.floor(seconds / 60);
-                                                const secs = Math.floor(seconds % 60);
-                                                return `${mins}:${secs.toString().padStart(2, '0')}`;
+                                                const mins = Math.floor(
+                                                  seconds / 60,
+                                                );
+                                                const secs = Math.floor(
+                                                  seconds % 60,
+                                                );
+                                                return `${mins}:${secs.toString().padStart(2, "0")}`;
                                               };
-                                              
+
                                               return (
                                                 <div className="w-full max-w-md px-4">
                                                   <Slider
                                                     min={0}
                                                     max={progress.duration}
-                                                    value={Math.min(progress.current, progress.duration)}
-                                                    onChange={(value) => handleSeekRecording(recording.id, value)}
+                                                    value={Math.min(
+                                                      progress.current,
+                                                      progress.duration,
+                                                    )}
+                                                    onChange={(value) =>
+                                                      handleSeekRecording(
+                                                        recording.id,
+                                                        value,
+                                                      )
+                                                    }
                                                     tooltip={{
-                                                      formatter: (value) => formatTime(value || 0),
+                                                      formatter: (value) =>
+                                                        formatTime(value || 0),
                                                     }}
                                                     styles={{
-                                                      track: { backgroundColor: 'rgba(140, 125, 209, 0.5)' },
-                                                      rail: { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
-                                                      handle: { borderColor: 'rgba(140, 125, 209, 0.8)' },
+                                                      track: {
+                                                        backgroundColor:
+                                                          "rgba(140, 125, 209, 0.5)",
+                                                      },
+                                                      rail: {
+                                                        backgroundColor:
+                                                          "rgba(255, 255, 255, 0.2)",
+                                                      },
+                                                      handle: {
+                                                        borderColor:
+                                                          "rgba(140, 125, 209, 0.8)",
+                                                      },
                                                     }}
                                                   />
                                                   <div className="flex justify-between text-xs text-white/70 mt-1">
-                                                    <span>{formatTime(progress.current)}</span>
-                                                    <span>{formatTime(progress.duration)}</span>
+                                                    <span>
+                                                      {formatTime(
+                                                        progress.current,
+                                                      )}
+                                                    </span>
+                                                    <span>
+                                                      {formatTime(
+                                                        progress.duration,
+                                                      )}
+                                                    </span>
                                                   </div>
                                                 </div>
                                               );
