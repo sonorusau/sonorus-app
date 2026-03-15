@@ -19,7 +19,9 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "sonar": "sonar-scanner",
+    "sonar:scan-docker": "docker run --rm -e SONAR_HOST_URL=https://sonarcloud.io -e SONAR_TOKEN=$SONAR_TOKEN -v \"$(pwd)\":/usr/src sonarsource/sonar-scanner-cli"
   },
   "dependencies": {
     "@ant-design/icons": "^5.4.0",
