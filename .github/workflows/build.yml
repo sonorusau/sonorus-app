@@ -1,6 +1,6 @@
 name: Build
 
-on: 
+on:
   push:
     branches:
       - main
@@ -19,8 +19,21 @@ jobs:
     steps:
 
       - name: Run build
-        run: echo "npm run build:win" 
+        run: echo "npm run build:win"
       - name: complete status
         run: echo "Build complete"
+      - name: Security audit for production vulnerabilities
+        run: |
+          echo "Run npm audit"
+          AUDIT_OUTPUT=$(npm audit --json --prod 2>/dev/null || true)
+          TOTAL_VULNS=$(echo "$AUDIT_OUTPUT" | jq '.advisories | length // 0')
 
+          echo "Production vulnerabilities: $TOTAL_VULNS"
 
+          if [ "$TOTAL_VULNS" -gt 0]; then
+            echo "::error::found $TOTAL_VULNS production vulnerabilities. Must be 0."
+            npm audit --prod
+            exit 1
+          fi
+
+          echo "No production vulnerabilities found"
