@@ -88,7 +88,8 @@ function QuickScanPage(): JSX.Element {
   );
   const [analysisComplete, setAnalysisComplete] = useState(false);
   const [analysisProcessing, setAnalysisProcessing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<ComprehensiveAnalysisResult | null>(null);
+  const [analysisResults, setAnalysisResults] =
+    useState<ComprehensiveAnalysisResult | null>(null);
   const [selectedHeartArea, setSelectedHeartArea] = useState<
     HeartLocation | ""
   >("");
@@ -439,7 +440,7 @@ function QuickScanPage(): JSX.Element {
       currentRecordingBatch: !!currentRecordingBatch,
       selectedPatient: !!selectedPatient,
       batchPatient: !!currentRecordingBatch?.patient,
-      hasRecordings: !!currentRecordingBatch?.recordings?.length
+      hasRecordings: !!currentRecordingBatch?.recordings?.length,
     });
 
     if (!currentRecordingBatch) {
@@ -448,24 +449,31 @@ function QuickScanPage(): JSX.Element {
     }
 
     // Validate that batch has recordings before proceeding
-    if (!currentRecordingBatch.recordings || currentRecordingBatch.recordings.length === 0) {
+    if (
+      !currentRecordingBatch.recordings ||
+      currentRecordingBatch.recordings.length === 0
+    ) {
       console.error("Cannot perform analysis: no recordings in batch");
-      alert("No recordings found. Please complete at least one recording before starting analysis.");
+      alert(
+        "No recordings found. Please complete at least one recording before starting analysis.",
+      );
       return;
     }
 
     // Use the patient from the recording batch if selectedPatient is null
     const patientForAnalysis = selectedPatient || currentRecordingBatch.patient;
-    
+
     if (!patientForAnalysis) {
-      console.error("Cannot perform analysis: no patient information available");
+      console.error(
+        "Cannot perform analysis: no patient information available",
+      );
       return;
     }
 
     console.log("Starting analysis for patient:", patientForAnalysis.name);
 
     setAnalysisProcessing(true);
-    
+
     // Auto-scroll to the analysis section
     scrollToSection(3);
 
@@ -473,17 +481,33 @@ function QuickScanPage(): JSX.Element {
     const generateAnalysisResults = (): ComprehensiveAnalysisResult => {
       const generateValveAnalysis = (valve: HeartLocation) => {
         // Generate realistic percentages with some deterministic variation based on valve type
-        const baseRegurgitation = valve === HeartLocationEnum.Mitral ? 8 : valve === HeartLocationEnum.Tricuspid ? 5 : 3;
-        const baseStenosis = valve === HeartLocationEnum.Aortic ? 12 : valve === HeartLocationEnum.Pulmonary ? 8 : 4;
+        const baseRegurgitation =
+          valve === HeartLocationEnum.Mitral
+            ? 8
+            : valve === HeartLocationEnum.Tricuspid
+              ? 5
+              : 3;
+        const baseStenosis =
+          valve === HeartLocationEnum.Aortic
+            ? 12
+            : valve === HeartLocationEnum.Pulmonary
+              ? 8
+              : 4;
 
-        const regurgitation = Math.min(25, Math.max(0, baseRegurgitation + (Math.random() * 10 - 5)));
-        const stenosis = Math.min(30, Math.max(0, baseStenosis + (Math.random() * 8 - 4)));
+        const regurgitation = Math.min(
+          25,
+          Math.max(0, baseRegurgitation + (Math.random() * 10 - 5)),
+        );
+        const stenosis = Math.min(
+          30,
+          Math.max(0, baseStenosis + (Math.random() * 8 - 4)),
+        );
 
         // Determine severity based on combined percentages
         const maxPercentage = Math.max(regurgitation, stenosis);
         let severity: "Normal" | "Mild" | "Moderate" | "Severe" = "Normal";
         if (maxPercentage > 20) severity = "Severe";
-        else if (maxPercentage > 15) severity = "Moderate"; 
+        else if (maxPercentage > 15) severity = "Moderate";
         else if (maxPercentage > 8) severity = "Mild";
 
         return {
@@ -491,7 +515,10 @@ function QuickScanPage(): JSX.Element {
           regurgitation_percentage: regurgitation,
           stenosis_percentage: stenosis,
           severity_level: severity,
-          notes: severity !== "Normal" ? `${severity.toLowerCase()} ${valve} valve dysfunction detected` : undefined
+          notes:
+            severity !== "Normal"
+              ? `${severity.toLowerCase()} ${valve} valve dysfunction detected`
+              : undefined,
         };
       };
 
@@ -499,15 +526,19 @@ function QuickScanPage(): JSX.Element {
         generateValveAnalysis(HeartLocationEnum.Aortic),
         generateValveAnalysis(HeartLocationEnum.Pulmonary),
         generateValveAnalysis(HeartLocationEnum.Tricuspid),
-        generateValveAnalysis(HeartLocationEnum.Mitral)
+        generateValveAnalysis(HeartLocationEnum.Mitral),
       ];
 
       // Generate overall assessment
-      const abnormalValves = valveAnalyses.filter(v => v.severity_level !== "Normal");
-      const severeValves = abnormalValves.filter(v => v.severity_level === "Severe");
-      
+      const abnormalValves = valveAnalyses.filter(
+        (v) => v.severity_level !== "Normal",
+      );
+      const severeValves = abnormalValves.filter(
+        (v) => v.severity_level === "Severe",
+      );
+
       let overallAssessment = "";
-      let recommendations: string[] = [];
+      const recommendations: string[] = [];
 
       if (severeValves.length > 0) {
         overallAssessment = `Severe valve dysfunction detected in ${severeValves.length} valve(s). Immediate cardiology referral recommended.`;
@@ -519,10 +550,13 @@ function QuickScanPage(): JSX.Element {
         recommendations.push("Schedule follow-up in 3-6 months");
         recommendations.push("Consider echocardiogram for detailed assessment");
         if (skinBarriers.length > 0) {
-          recommendations.push("Repeat recording with optimal skin preparation may improve accuracy");
+          recommendations.push(
+            "Repeat recording with optimal skin preparation may improve accuracy",
+          );
         }
       } else {
-        overallAssessment = "All heart valves appear to be functioning within normal parameters.";
+        overallAssessment =
+          "All heart valves appear to be functioning within normal parameters.";
         recommendations.push("Continue routine cardiac health monitoring");
         recommendations.push("Maintain healthy lifestyle and regular exercise");
       }
@@ -532,12 +566,12 @@ function QuickScanPage(): JSX.Element {
         session_timestamp: currentRecordingBatch.start_time,
         analysis_timestamp: new Date().toISOString(),
         valve_analyses: valveAnalyses,
-        skin_barriers: skinBarriers.map(barrier => ({
+        skin_barriers: skinBarriers.map((barrier) => ({
           level: barrier.level,
-          option: barrier.option
+          option: barrier.option,
         })),
         overall_assessment: overallAssessment,
-        recommendations: recommendations
+        recommendations: recommendations,
       };
     };
 
@@ -555,7 +589,7 @@ function QuickScanPage(): JSX.Element {
     // Preserve patient information for reuse if they had started recording
     const currentPatient = selectedPatient;
     const hadStartedRecording = hasUserStartedRecording;
-    
+
     setCurrentStep(WorkflowSteps.SelectPatient);
     setAnalysisComplete(false);
     setAnalysisProcessing(false);
@@ -571,10 +605,10 @@ function QuickScanPage(): JSX.Element {
     setRecordingResults({});
     setSkinBarriers([]);
     setHasUserStartedRecording(false);
-    
+
     // Scroll back to the beginning (Skin Barriers section)
     scrollToSection(0);
-    
+
     // Only create new batch if user had actually started recording before
     if (hadStartedRecording) {
       if (currentPatient && currentPatient.name !== "Quick Scan Session") {
@@ -1374,9 +1408,9 @@ function QuickScanPage(): JSX.Element {
             )}
 
             {Object.values(completedRecordings).filter(Boolean).length === 4 &&
-              !analysisComplete && 
-              currentRecordingBatch && 
-              currentRecordingBatch.recordings && 
+              !analysisComplete &&
+              currentRecordingBatch &&
+              currentRecordingBatch.recordings &&
               currentRecordingBatch.recordings.length > 0 && (
                 <div className="mb-2">
                   <p className="text-green-400 text-base mb-2">
@@ -1391,7 +1425,6 @@ function QuickScanPage(): JSX.Element {
                   </GlassButton>
                 </div>
               )}
-
           </div>
         </GlassCard>
       </section>
@@ -1411,7 +1444,7 @@ function QuickScanPage(): JSX.Element {
 
             {analysisProcessing && (
               <div className="mb-6">
-                <AnalysisProcessor 
+                <AnalysisProcessor
                   onAnalysisComplete={() => {
                     // This will be handled by the setTimeout in performComprehensiveAnalysis
                   }}

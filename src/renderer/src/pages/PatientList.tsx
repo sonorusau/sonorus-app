@@ -69,9 +69,9 @@ function PatientList(): JSX.Element {
   const [playingRecordings, setPlayingRecordings] = useState<Set<number>>(
     new Set(),
   );
-  const [audioInstances, setAudioInstances] = useState<Map<number, HTMLAudioElement>>(
-    new Map(),
-  );
+  const [audioInstances, setAudioInstances] = useState<
+    Map<number, HTMLAudioElement>
+  >(new Map());
 
   useEffect(() => {
     loadPatients();
@@ -412,23 +412,27 @@ function PatientList(): JSX.Element {
 
         // Clean up the audio object
         const url = audio.src;
-        if (url.startsWith('blob:')) {
+        if (url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
 
         // Remove event listeners to prevent memory leaks
-        audio.removeEventListener('ended', audio.onended);
-        audio.removeEventListener('error', audio.onerror);
+        if (audio.onended) {
+          audio.removeEventListener("ended", audio.onended as EventListener);
+        }
+        if (audio.onerror) {
+          audio.removeEventListener("error", audio.onerror as EventListener);
+        }
       }
 
       // Update state - remove from playing set and audio instances
-      setPlayingRecordings(prev => {
+      setPlayingRecordings((prev) => {
         const newSet = new Set(prev);
         newSet.delete(recordingId);
         return newSet;
       });
 
-      setAudioInstances(prev => {
+      setAudioInstances((prev) => {
         const newMap = new Map(prev);
         newMap.delete(recordingId);
         return newMap;
@@ -436,9 +440,8 @@ function PatientList(): JSX.Element {
 
       console.log(`Stopped recording playback: ${recordingId}`);
       message.success("Recording stopped");
-
     } catch (error) {
-      console.error('Error stopping recording:', error);
+      console.error("Error stopping recording:", error);
       message.error("Failed to stop recording");
     }
   };
@@ -936,53 +939,55 @@ function PatientList(): JSX.Element {
                                         </div>
                                       </div>
                                       <div className="recording-actions flex items-center gap-2 ml-4">
-                                      <Tooltip
-                                        title={
-                                          playingRecordings.has(recording.id)
-                                            ? "Pause Recording"
-                                            : "Play Recording"
-                                        }
-                                      >
-                                        <GlassButton
-                                          size="sm"
-                                          variant="secondary"
-                                          icon={
-                                            playingRecordings.has(recording.id) ? (
-                                              <PauseCircleOutlined
-                                                className="text-green-400"
-                                              />
-                                            ) : (
-                                              <PlayCircleOutlined />
-                                            )
+                                        <Tooltip
+                                          title={
+                                            playingRecordings.has(recording.id)
+                                              ? "Pause Recording"
+                                              : "Play Recording"
                                           }
-                                          onClick={() =>
-                                            handlePlayPauseRecording(recording)
-                                          }
-                                        />
-                                      </Tooltip>
-                                      <Tooltip title="Download">
-                                        <GlassButton
-                                          size="sm"
-                                          variant="secondary"
-                                          icon={<DownloadOutlined />}
-                                          onClick={() =>
-                                            handleDownloadRecording(recording)
-                                          }
-                                        />
-                                      </Tooltip>
-                                      <Tooltip title="Delete Recording">
-                                        <GlassButton
-                                          size="sm"
-                                          variant="danger"
-                                          icon={<DeleteOutlined />}
-                                          onClick={() =>
-                                            handleDeleteIndividualRecording(
-                                              recording.id,
-                                            )
-                                          }
-                                        />
-                                      </Tooltip>
-                                    </div>
+                                        >
+                                          <GlassButton
+                                            size="sm"
+                                            variant="secondary"
+                                            icon={
+                                              playingRecordings.has(
+                                                recording.id,
+                                              ) ? (
+                                                <PauseCircleOutlined className="text-green-400" />
+                                              ) : (
+                                                <PlayCircleOutlined />
+                                              )
+                                            }
+                                            onClick={() =>
+                                              handlePlayPauseRecording(
+                                                recording,
+                                              )
+                                            }
+                                          />
+                                        </Tooltip>
+                                        <Tooltip title="Download">
+                                          <GlassButton
+                                            size="sm"
+                                            variant="secondary"
+                                            icon={<DownloadOutlined />}
+                                            onClick={() =>
+                                              handleDownloadRecording(recording)
+                                            }
+                                          />
+                                        </Tooltip>
+                                        <Tooltip title="Delete Recording">
+                                          <GlassButton
+                                            size="sm"
+                                            variant="danger"
+                                            icon={<DeleteOutlined />}
+                                            onClick={() =>
+                                              handleDeleteIndividualRecording(
+                                                recording.id,
+                                              )
+                                            }
+                                          />
+                                        </Tooltip>
+                                      </div>
                                     </div>
                                   </GlassCard>
                                 ))

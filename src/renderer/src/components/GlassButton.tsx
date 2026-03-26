@@ -8,6 +8,7 @@ interface GlassButtonProps {
   disabled?: boolean;
   className?: string;
   icon?: ReactNode;
+  loading?: boolean;
 }
 
 function GlassButton({
@@ -18,6 +19,7 @@ function GlassButton({
   disabled = false,
   className = "",
   icon,
+  loading = false,
 }: GlassButtonProps): JSX.Element {
   const sizeClasses = {
     sm: "px-4 py-2 text-sm",
@@ -53,13 +55,13 @@ function GlassButton({
       className={`
         backdrop-blur-sm rounded-xl border font-medium
         transition-all duration-300 hover:backdrop-blur-md
-        ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95 hover:scale-105"}
+        ${disabled || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95 hover:scale-105"}
         ${sizeClasses[size]}
         ${className}
         flex items-center justify-center gap-2
       `}
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
       style={{
         background: variantStyles[variant].background,
         borderColor: variantStyles[variant].borderColor,
@@ -68,8 +70,12 @@ function GlassButton({
           "0 8px 32px rgba(0, 0, 0, 0.12), 0 0 30px rgba(255, 255, 255, 0.03) inset, 0 2px 16px rgba(140, 125, 209, 0.08)",
       }}
     >
-      {icon && <span>{icon}</span>}
-      {children}
+      {loading ? (
+        <span className="animate-spin">⟳</span>
+      ) : icon ? (
+        <span>{icon}</span>
+      ) : null}
+      {loading ? "Loading..." : children}
     </button>
   );
 }

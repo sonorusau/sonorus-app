@@ -89,9 +89,9 @@ function RecordingsList(): JSX.Element {
   const [playingRecordings, setPlayingRecordings] = useState<Set<number>>(
     new Set(),
   );
-  const [audioInstances, setAudioInstances] = useState<Map<number, HTMLAudioElement>>(
-    new Map(),
-  );
+  const [audioInstances, setAudioInstances] = useState<
+    Map<number, HTMLAudioElement>
+  >(new Map());
 
   useEffect(() => {
     loadRecordings();
@@ -569,32 +569,35 @@ function RecordingsList(): JSX.Element {
 
         // Clean up the audio object
         const url = audio.src;
-        if (url.startsWith('blob:')) {
+        if (url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
 
         // Remove event listeners to prevent memory leaks
-        audio.removeEventListener('ended', audio.onended);
-        audio.removeEventListener('error', audio.onerror);
+        if (audio.onended) {
+          audio.removeEventListener("ended", audio.onended as EventListener);
+        }
+        if (audio.onerror) {
+          audio.removeEventListener("error", audio.onerror as EventListener);
+        }
       }
 
       // Update state - remove from playing set and audio instances
-      setPlayingRecordings(prev => {
+      setPlayingRecordings((prev) => {
         const newSet = new Set(prev);
         newSet.delete(recordingId);
         return newSet;
       });
 
-      setAudioInstances(prev => {
+      setAudioInstances((prev) => {
         const newMap = new Map(prev);
         newMap.delete(recordingId);
         return newMap;
       });
 
       console.log(`Stopped recording playback: ${recordingId}`);
-
     } catch (error) {
-      console.error('Error stopping recording:', error);
+      console.error("Error stopping recording:", error);
       alert("Failed to stop recording");
     }
   };
@@ -1036,16 +1039,18 @@ function RecordingsList(): JSX.Element {
                                             variant="secondary"
                                             size="sm"
                                             icon={
-                                              playingRecordings.has(recording.id) ? (
-                                                <PauseCircleOutlined
-                                                  className="text-green-400"
-                                                />
+                                              playingRecordings.has(
+                                                recording.id,
+                                              ) ? (
+                                                <PauseCircleOutlined className="text-green-400" />
                                               ) : (
                                                 <PlayCircleOutlined />
                                               )
                                             }
                                             onClick={() =>
-                                              handlePlayPauseRecording(recording)
+                                              handlePlayPauseRecording(
+                                                recording,
+                                              )
                                             }
                                           />
                                         </Tooltip>
