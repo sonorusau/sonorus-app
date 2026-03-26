@@ -96,6 +96,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Typography defaults */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display, "Plus Jakarta Sans", system-ui, sans-serif);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight, -0.025em);
+  line-height: var(--leading-tight, 1.25);
+}
+
 /* @media (prefers-color-scheme: dark) { */
 /*   div, h1, h2, h3, span, label, * { */
 /*     color: white !important; */

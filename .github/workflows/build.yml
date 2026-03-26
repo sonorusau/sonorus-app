@@ -17,13 +17,13 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "20"
           cache: "npm"
 
       - name: Install dependencies
@@ -31,6 +31,35 @@ jobs:
 
       - name: Run build
         run: npm run build
-
-      - name: Build complete
+      - name: complete status
         run: echo "Build complete"
+      - name: Security audit for production vulnerabilities
+        run: |
+          echo "Run npm audit"
+          AUDIT_OUTPUT=$(npm audit --json --prod 2>/dev/null || true)
+          TOTAL_VULNS=$(echo "$AUDIT_OUTPUT" | jq '.advisories | length // 0')
+
+          echo "Production vulnerabilities: $TOTAL_VULNS"
+
+          if [ "$TOTAL_VULNS" -gt 0 ]; then
+            echo "::error::found $TOTAL_VULNS production vulnerabilities. Must be 0."
+            npm audit --prod
+            exit 1
+          fi
+
+          echo "No production vulnerabilities found"
+      - name: Enforce code formatting
+        run: |
+          echo "Checking code formatting"
+
+          npm run format
+
+          MODIFIED_FILES=$(git status --porcelain | grep -v 'package-lock.json' || true)
+          if [ -n "$MODIFIED_FILES" ]; then
+            echo "Code formatter made changes to files!"
+            echo "Run npm run format and push your changes again"
+            echo "Files that were formatted"
+            echo "$MODIFIED_FILES"
+            exit 1
+          fi
+          echo "Code formatting is correct"

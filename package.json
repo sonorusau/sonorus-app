@@ -1,6 +1,6 @@
 {
   "name": "sonorus",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Professional heart sound analysis application with React and TypeScript",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -26,6 +26,8 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f"
+    "sonar": "sonar-scanner",
+    "sonar:scan-docker": "docker run --rm -e SONAR_HOST_URL=https://sonarcloud.io -e SONAR_TOKEN=$SONAR_TOKEN -v \"$(pwd)\":/usr/src sonarsource/sonar-scanner-cli"
   },
   "dependencies": {
     "@ant-design/icons": "^5.4.0",

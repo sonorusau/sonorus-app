@@ -76,11 +76,11 @@ jobs:
             - **Build Date**: ${{ github.run_id }}
 
             ### Features
-            - 🫀 Comprehensive 4-valve heart sound recording (Aortic, Pulmonary, Tricuspid, Mitral)
-            - 🎨 Modern glassmorphic design with light/dark themes
-            - 🖥️ Full-screen native macOS application
-            - 📊 Patient management and recording history
-            - ⚙️ Advanced settings and configuration
+            - Comprehensive 4-valve heart sound recording (Aortic, Pulmonary, Tricuspid, Mitral)
+            - Modern glassmorphic design with light/dark themes
+            - Full-screen native macOS application
+            - Patient management and recording history
+            - Advanced settings and configuration
 
             ### Installation
             1. Download the DMG file below
