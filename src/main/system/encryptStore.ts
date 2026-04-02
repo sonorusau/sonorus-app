@@ -5,7 +5,8 @@ export const store = new Store();
 
 export const encryptStoreSet = (key: string, value: string): void => {
   if (!safeStorage.isEncryptionAvailable()) {
-    console.error("Encryption is not avalaible");
+    store.set(key, value);
+    return;
   }
 
   const encryptedValue: Buffer = safeStorage.encryptString(value);
@@ -14,13 +15,19 @@ export const encryptStoreSet = (key: string, value: string): void => {
 };
 
 export const encryptStoreGet = (key: string): string => {
+  const encryptedValue: string = store.get(key) as string;
+
   if (!safeStorage.isEncryptionAvailable()) {
-    console.error("Encryption is not avalaible");
+    return encryptedValue;
   }
 
-  const encryptedValue: string = store.get(key) as string;
-  const encryptedValueBuffer: Buffer = Buffer.from(encryptedValue, "hex");
-  return safeStorage.decryptString(encryptedValueBuffer);
+  try {
+    const encryptedValueBuffer: Buffer = Buffer.from(encryptedValue, "hex");
+    return safeStorage.decryptString(encryptedValueBuffer);
+  } catch (error) {
+    console.error(`Failed to decrypt key ${key}:`, error);
+    return encryptedValue;
+  }
 };
 
 export const encryptStoreGetAllKeys = (): string[] => {
@@ -29,7 +36,11 @@ export const encryptStoreGetAllKeys = (): string[] => {
 
 export const encryptStoreGetAll = (): Record<string, string> => {
   return Object.keys(store.store).reduce((acc, key: string) => {
-    acc[key] = encryptStoreGet(key);
+    try {
+      acc[key] = encryptStoreGet(key);
+    } catch (error) {
+      console.error(`Failed to get key ${key}:`, error);
+    }
     return acc;
   }, {});
 };

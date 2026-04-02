@@ -77,8 +77,20 @@ body {
   padding: 0;
   color: var(--color-text);
   background: var(--color-background);
-  line-height: var(--leading-normal, 1.5);
-  font-family: var(--font-body, "Figtree", "Outfit", system-ui, sans-serif);
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
+    sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

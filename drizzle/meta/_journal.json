@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1774502836940,
+      "tag": "0000_majestic_phalanx",
+      "breakpoints": true
+    }
+  ]
+}
