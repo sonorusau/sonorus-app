@@ -25,7 +25,7 @@
     "db:studio": "drizzle-kit studio",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
     "sonar": "sonar-scanner",
     "sonar:scan-docker": "docker run --rm -e SONAR_HOST_URL=https://sonarcloud.io -e SONAR_TOKEN=$SONAR_TOKEN -v \"$(pwd)\":/usr/src sonarsource/sonar-scanner-cli"
   },
