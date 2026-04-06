@@ -129,7 +129,7 @@ function LoginPage(): JSX.Element {
                 isDarkMode ? "text-white/60" : "text-slate-600"
               }`}
             >
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <a
                 href="#/signup"
                 className={`text-sm font-medium hover:underline ${

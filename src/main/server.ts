@@ -30,7 +30,7 @@ interface SessionRequestBody {
 
 app.post(
   "/api/auth/login",
-  async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
+  async (req: Request<any, any, LoginRequestBody>, res: Response) => {
     try {
       const { email, password } = req.body;
 
@@ -63,7 +63,7 @@ app.post(
 
 app.post(
   "/api/auth/register",
-  async (req: Request<{}, {}, RegisterRequestBody>, res: Response) => {
+  async (req: Request<any, any, RegisterRequestBody>, res: Response) => {
     try {
       const { name, email, password } = req.body;
 
@@ -90,7 +90,7 @@ app.post(
 
 app.post(
   "/api/auth/validate",
-  async (req: Request<{}, {}, SessionRequestBody>, res: Response) => {
+  async (req: Request<any, any, SessionRequestBody>, res: Response) => {
     try {
       const { sessionToken } = req.body;
 
@@ -121,7 +121,7 @@ app.post(
 
 app.post(
   "/api/auth/logout",
-  async (req: Request<{}, {}, SessionRequestBody>, res: Response) => {
+  async (req: Request<any, any, SessionRequestBody>, res: Response) => {
     try {
       const { sessionToken } = req.body;
 
