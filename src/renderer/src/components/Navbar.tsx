@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   HomeOutlined,
   TeamOutlined,
   UnorderedListOutlined,
   SettingOutlined,
+  UserOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
+import { Dropdown } from "antd";
 import GlassButton from "./GlassButton";
+import { useAuth } from "../contexts/AuthContext";
 
 interface NavItem {
   key: string;
@@ -45,6 +49,8 @@ const navItems: NavItem[] = [
 function Navbar(): JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const handleNavClick = (path: string) => {
     navigate(path);
@@ -56,6 +62,37 @@ function Navbar(): JSX.Element {
     }
     return location.pathname.startsWith(path);
   };
+
+  const handleLogout = async () => {
+    setUserMenuOpen(false);
+    await logout();
+    navigate("/login");
+  };
+
+  const getUserAvatar = () => {
+    if (!user) return null;
+    const initial = user.name.charAt(0).toUpperCase();
+    return (
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-medium">
+        {initial}
+      </div>
+    );
+  };
+
+  const userMenuItems = [
+    {
+      key: "profile",
+      icon: <UserOutlined />,
+      label: user?.email || "Profile",
+      onClick: () => navigate("/settings"),
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Logout",
+      onClick: handleLogout,
+    },
+  ];
 
   return (
     <nav className="flex items-center justify-center gap-4 no-drag">
@@ -73,6 +110,24 @@ function Navbar(): JSX.Element {
           {item.label}
         </GlassButton>
       ))}
+      {user && (
+        <Dropdown
+          open={userMenuOpen}
+          onOpenChange={setUserMenuOpen}
+          menu={{ items: userMenuItems }}
+          trigger={["click"]}
+          placement="bottomRight"
+        >
+          <GlassButton
+            variant="secondary"
+            size="sm"
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="no-drag transition-all duration-300 hover:opacity-100"
+          >
+            {getUserAvatar()}
+          </GlassButton>
+        </Dropdown>
+      )}
     </nav>
   );
 }

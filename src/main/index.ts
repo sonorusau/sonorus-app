@@ -22,6 +22,7 @@ import {
   encryptStoreDelete,
 } from "./system/encryptStore";
 import { loadFile } from "./system/loadFile";
+import { startAuthServer } from "./server";
 
 function createWindow(): void {
   // Get screen dimensions
@@ -100,6 +101,24 @@ app.whenReady().then(() => {
   );
   ipcMain.handle("system/loadFile", (evt, filePath) => loadFile(evt, filePath));
 
+  // Auth IPC handlers for session management
+  const SESSION_TOKEN_KEY = "auth_session_token";
+
+  ipcMain.handle("auth/getSession", async () => {
+    const sessionToken = store.get(SESSION_TOKEN_KEY) as string | undefined;
+    return sessionToken || null;
+  });
+
+  ipcMain.handle("auth/setSession", async (_event, token: string) => {
+    store.set(SESSION_TOKEN_KEY, token);
+    return true;
+  });
+
+  ipcMain.handle("auth/clearSession", async () => {
+    store.delete(SESSION_TOKEN_KEY);
+    return true;
+  });
+
   ipcMain.handle("system/exportRepostoTxt", (event, repos) => {
     try {
       console.log(repos);
@@ -161,6 +180,9 @@ app.whenReady().then(() => {
   }
 
   createWindow();
+
+  // Start auth server
+  startAuthServer();
 
   app.on("activate", function () {
     // On macOS it's common to re-create a window in the app when the
