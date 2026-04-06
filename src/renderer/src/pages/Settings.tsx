@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Switch, Select, Slider, Input, Divider, notification } from "antd";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 import {
   SettingOutlined,
   WifiOutlined,
@@ -11,6 +12,7 @@ import {
   UserOutlined,
   HeartOutlined,
   SaveOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import GlassCard from "../components/GlassCard";
 import GlassButton from "../components/GlassButton";
@@ -55,6 +57,7 @@ interface SettingsData {
 
 function Settings(): JSX.Element {
   const { themeMode, isDarkMode, setThemeMode } = useTheme();
+  const { user, logout, loading: authLoading } = useAuth();
   const [settings, setSettings] = useState<SettingsData>({
     // Device Settings
     autoConnect: true,
@@ -157,6 +160,52 @@ function Settings(): JSX.Element {
           Configure your Sonorus application preferences and device settings
         </p>
       </div>
+
+      {/* User Profile Section */}
+      {user && (
+        <GlassCard padding="lg" className="mb-6">
+          <div className="flex items-center gap-2 mb-6">
+            <UserOutlined className="text-white text-xl" />
+            <h3 className="text-xl font-semibold text-white">User Profile</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="text-white font-medium mb-2 block">Name</label>
+              <Input
+                value={user.name}
+                disabled
+                className="search-input"
+                size="large"
+                prefix={<UserOutlined />}
+              />
+            </div>
+
+            <div>
+              <label className="text-white font-medium mb-2 block">Email</label>
+              <Input
+                value={user.email}
+                disabled
+                className="search-input"
+                size="large"
+                prefix={<UserOutlined />}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <GlassButton
+              variant="danger"
+              icon={<LogoutOutlined />}
+              onClick={logout}
+              disabled={authLoading}
+              className="w-full md:w-auto"
+            >
+              {authLoading ? "Logging out..." : "Logout"}
+            </GlassButton>
+          </div>
+        </GlassCard>
+      )}
 
       {hasChanges && (
         <GlassCard

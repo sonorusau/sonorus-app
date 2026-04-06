@@ -170,11 +170,9 @@ const useAudioPlayback = (): UseAudioPlaybackResult => {
         const audio = new Audio(url);
 
         // Create AudioContext and AnalyserNode for waveform visualization
-        const audioContext = new (
-          globalThis.AudioContext ||
+        const audioContext = new (globalThis.AudioContext ||
           (globalThis as unknown as { webkitAudioContext: typeof AudioContext })
-            .webkitAudioContext
-        )();
+            .webkitAudioContext)();
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 2048;
         analyser.smoothingTimeConstant = 0.8;

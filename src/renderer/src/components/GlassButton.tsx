@@ -9,6 +9,7 @@ interface GlassButtonProps {
   className?: string;
   icon?: ReactNode;
   type?: "button" | "submit" | "reset";
+  loading?: boolean;
 }
 
 function GlassButton({
@@ -20,6 +21,7 @@ function GlassButton({
   className = "",
   icon,
   type = "button",
+  loading = false,
 }: GlassButtonProps): JSX.Element {
   const sizeClasses = {
     sm: "px-3 py-1.5 text-sm gap-1.5",
@@ -69,16 +71,20 @@ function GlassButton({
         rounded-xl border font-medium text-white
         backdrop-blur-sm transition-all duration-200
         flex items-center justify-center
-        ${disabled ? "opacity-50 cursor-not-allowed" : `cursor-pointer active:scale-[0.97] ${hoverClasses[variant]}`}
+        ${disabled || loading ? "opacity-50 cursor-not-allowed" : `cursor-pointer active:scale-[0.97] ${hoverClasses[variant]}`}
         ${sizeClasses[size]}
         ${className}
       `}
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
+      onClick={disabled || loading ? undefined : onClick}
+      disabled={disabled || loading}
       style={variantStyles[variant]}
     >
-      {icon && <span className="flex-shrink-0">{icon}</span>}
-      {children}
+      {loading ? (
+        <span className="animate-spin mr-2">⟳</span>
+      ) : (
+        icon && <span className="flex-shrink-0">{icon}</span>
+      )}
+      {loading ? "Loading..." : children}
     </button>
   );
 }

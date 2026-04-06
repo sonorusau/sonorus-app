@@ -33,6 +33,53 @@ const api: IAPI = {
   loadFile: (filepath: string): Promise<string> => {
     return ipcRenderer.invoke("system/loadFile", filepath);
   },
+  authLogin: async (email: string, password: string): Promise<any> => {
+    const response = await fetch("http://localhost:3000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    return response.json();
+  },
+  authRegister: async (
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> => {
+    const response = await fetch("http://localhost:3000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+    return response.json();
+  },
+  authValidate: async (sessionToken: string): Promise<any> => {
+    const response = await fetch("http://localhost:3000/api/auth/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionToken }),
+    });
+    return response.json();
+  },
+  authLogout: async (sessionToken: string): Promise<{ success: boolean }> => {
+    const response = await fetch("http://localhost:3000/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionToken }),
+    });
+    return response.json();
+  },
+  authGetSession: async (): Promise<string | null> => {
+    const allData = await invoke("system/encryptStoreGetAll");
+    return allData["sessionToken"] || null;
+  },
+  authSetSession: async (token: string): Promise<void> => {
+    const args = { key: "sessionToken", value: token };
+    return invoke("system/encryptStoreSet", args);
+  },
+  authClearSession: async (): Promise<void> => {
+    return invoke("system/encryptStoreDelete", "sessionToken");
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to
