@@ -81,7 +81,9 @@ function GlassButton({
     >
       {loading ? (
         <span className="animate-spin mr-2">⟳</span>
-      ) : icon && <span className="flex-shrink-0">{icon}</span>}
+      ) : (
+        icon && <span className="flex-shrink-0">{icon}</span>
+      )}
       {loading ? "Loading..." : children}
     </button>
   );
