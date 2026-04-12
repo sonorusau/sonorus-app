@@ -43,6 +43,7 @@ import type RecordingBatch from "../types/RecordingBatch";
 import {
   getPatients,
   savePatient,
+  updatePatient,
   deletePatient,
   getRecordingsByPatient,
   getRecordingBatchesByPatient,
@@ -75,6 +76,7 @@ function PatientList(): JSX.Element {
     new Set(),
   );
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [form] = Form.useForm<NewPatientFormData>();
   const [deleteModal, setDeleteModal] = useState<{
     open: boolean;
@@ -170,57 +172,118 @@ function PatientList(): JSX.Element {
       notes: "",
     });
     setShowNewPatientModal(true);
+    setIsEditing(false);
+  };
+
+  const handleEditPatient = () => {
+    if (!selectedPatient) return;
+
+    form.setFieldsValue({
+      name: selectedPatient.name,
+      dob: dayjs(selectedPatient.dob),
+      patient_uid: selectedPatient.patient_uid,
+      height: selectedPatient.patient_details.height,
+      weight: selectedPatient.patient_details.weight,
+      medications: (selectedPatient.patient_details.medications || []).join(
+        ", ",
+      ),
+      conditions: (selectedPatient.patient_details.conditions || []).join(", "),
+      notes: (selectedPatient.patient_details.notes || []).join(", "),
+    });
+
+    setIsEditing(true);
+    setShowNewPatientModal(true);
   };
 
   const handleCreatePatient = async () => {
     try {
       const values = await form.validateFields();
 
+      // Convert height and weight to numbers if they are strings
+      const height =
+        typeof values.height === "string"
+          ? parseFloat(values.height)
+          : values.height;
+      const weight =
+        typeof values.weight === "string"
+          ? parseFloat(values.weight)
+          : values.weight;
+
       // Parse medications, conditions, and notes from comma-separated strings
-      const medications = values.medications
-        .split(",")
-        .map((med) => med.trim())
-        .filter((med) => med.length > 0);
+      const medications =
+        values.medications && typeof values.medications === "string"
+          ? values.medications
+              .split(",")
+              .map((med) => med.trim())
+              .filter((med) => med.length > 0)
+          : [];
 
-      const conditions = values.conditions
-        .split(",")
-        .map((condition) => condition.trim())
-        .filter((condition) => condition.length > 0);
+      const conditions =
+        values.conditions && typeof values.conditions === "string"
+          ? values.conditions
+              .split(",")
+              .map((condition) => condition.trim())
+              .filter((condition) => condition.length > 0)
+          : [];
 
-      const notes = values.notes
-        .split(",")
-        .map((note) => note.trim())
-        .filter((note) => note.length > 0);
+      const notes =
+        values.notes && typeof values.notes === "string"
+          ? values.notes
+              .split(",")
+              .map((note) => note.trim())
+              .filter((note) => note.length > 0)
+          : [];
 
-      const patientDetails: PatientDetails = {
-        id: 0, // Will be assigned by storage
-        height: values.height,
-        weight: values.weight,
-        medications,
-        conditions,
-        notes,
-      };
+      if (isEditing && selectedPatient) {
+        const updatedPatient: Patient = {
+          ...selectedPatient,
+          name: values.name,
+          dob: values.dob.toISOString(),
+          patient_uid: values.patient_uid,
+          patient_details: {
+            ...selectedPatient.patient_details,
+            height,
+            weight,
+            medications,
+            conditions,
+            notes,
+          },
+        };
 
-      const newPatient = await savePatient({
-        name: values.name,
-        dob: values.dob.toISOString(),
-        patient_uid: values.patient_uid,
-        patient_details: patientDetails,
-      });
+        const result = await updatePatient(updatedPatient);
+        await loadPatients();
+        setSelectedPatient(result);
+        message.success(`Patient "${result.name}" updated successfully`);
+      } else {
+        const patientDetails: PatientDetails = {
+          id: 0, // Will be assigned by storage
+          height,
+          weight,
+          medications,
+          conditions,
+          notes,
+        };
 
-      // Update local patients list
-      await loadPatients();
+        const newPatient = await savePatient({
+          name: values.name,
+          dob: values.dob.toISOString(),
+          patient_uid: values.patient_uid,
+          patient_details: patientDetails,
+        });
 
-      // Select the newly created patient
-      handlePatientSelect(newPatient);
+        // Update local patients list
+        await loadPatients();
+
+        // Select the newly created patient
+        handlePatientSelect(newPatient);
+        message.success(`Patient "${newPatient.name}" created successfully`);
+      }
 
       // Close modal
       setShowNewPatientModal(false);
-
-      message.success(`Patient "${newPatient.name}" created successfully`);
     } catch (error) {
-      console.error("Error creating patient:", error);
-      message.error("Failed to create patient");
+      console.error("Error saving patient:", error);
+      message.error(`Failed to ${isEditing ? "update" : "create"} patient`);
     }
   };
 
@@ -572,6 +635,14 @@ function PatientList(): JSX.Element {
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  <Tooltip title="Edit Patient">
+                    <GlassButton
+                      variant="secondary"
+                      size="sm"
+                      icon={<EditOutlined />}
+                      onClick={handleEditPatient}
+                    />
+                  </Tooltip>
                   <Tooltip title="Delete Patient">
                     <GlassButton
                       variant="danger"
@@ -654,19 +725,21 @@ function PatientList(): JSX.Element {
                 </div>
                 <div>
                   <p className="text-label text-white/50 mb-1">Conditions</p>
-                  <p className="text-white">
-                    {selectedPatient.patient_details.conditions.length > 0
+                  <div className="text-white">
+                    {selectedPatient.patient_details.conditions &&
+                    selectedPatient.patient_details.conditions.length > 0
                       ? selectedPatient.patient_details.conditions.join(", ")
                       : "—"}
-                  </p>
+                  </div>
                 </div>
                 <div>
                   <p className="text-label text-white/50 mb-1">Medications</p>
-                  <p className="text-white">
-                    {selectedPatient.patient_details.medications.length > 0
+                  <div className="text-white">
+                    {selectedPatient.patient_details.medications &&
+                    selectedPatient.patient_details.medications.length > 0
                       ? selectedPatient.patient_details.medications.join(", ")
                       : "—"}
-                  </p>
+                  </div>
                 </div>
               </div>
             </section>
@@ -1069,14 +1142,20 @@ function PatientList(): JSX.Element {
               className="w-12 h-12 rounded-xl flex items-center justify-center"
               style={{ background: "rgb(116, 74, 161)" }}
             >
-              <PlusOutlined className="text-white text-xl" />
+              {isEditing ? (
+                <EditOutlined className="text-white text-xl" />
+              ) : (
+                <PlusOutlined className="text-white text-xl" />
+              )}
             </div>
             <div>
               <h2 className="text-xl font-semibold text-white m-0 text-heading">
-                Add New Patient
+                {isEditing ? "Edit Patient Details" : "Add New Patient"}
               </h2>
               <p className="text-white/60 text-sm m-0 mt-1">
-                Enter patient information to create a new record
+                {isEditing
+                  ? "Update patient information and medical history"
+                  : "Enter patient information to create a new record"}
               </p>
             </div>
           </div>
@@ -1171,15 +1250,7 @@ function PatientList(): JSX.Element {
                   label={
                     <span className="text-white/90 font-medium">Height</span>
                   }
-                  rules={[
-                    { required: true, message: "Required" },
-                    {
-                      type: "number",
-                      min: 50,
-                      max: 250,
-                      message: "50-250 cm",
-                    },
-                  ]}
+                  rules={[{ required: true, message: "Required" }]}
                 >
                   <Input
                     type="number"
@@ -1195,15 +1266,7 @@ function PatientList(): JSX.Element {
                   label={
                     <span className="text-white/90 font-medium">Weight</span>
                   }
-                  rules={[
-                    { required: true, message: "Required" },
-                    {
-                      type: "number",
-                      min: 10,
-                      max: 300,
-                      message: "10-300 kg",
-                    },
-                  ]}
+                  rules={[{ required: true, message: "Required" }]}
                 >
                   <Input
                     type="number"
@@ -1234,15 +1297,17 @@ function PatientList(): JSX.Element {
                       Medical Conditions
                     </span>
                   }
+                  extra={
+                    <p className="text-white/40 text-xs mt-1">
+                      Separate multiple conditions with commas
+                    </p>
+                  }
                 >
                   <Input.TextArea
                     placeholder="e.g., Hypertension, Diabetes Type 2, Atrial Fibrillation"
                     rows={2}
                     className="modal-input"
                   />
-                  <p className="text-white/40 text-xs mt-1">
-                    Separate multiple conditions with commas
-                  </p>
                 </Form.Item>
 
                 <Form.Item
@@ -1252,15 +1317,17 @@ function PatientList(): JSX.Element {
                       Current Medications
                     </span>
                   }
+                  extra={
+                    <p className="text-white/40 text-xs mt-1">
+                      Include dosage if known
+                    </p>
+                  }
                 >
                   <Input.TextArea
                     placeholder="e.g., Aspirin 81mg, Lisinopril 10mg, Metformin 500mg"
                     rows={2}
                     className="modal-input"
                   />
-                  <p className="text-white/40 text-xs mt-1">
-                    Include dosage if known
-                  </p>
                 </Form.Item>
 
                 <Form.Item
@@ -1288,9 +1355,9 @@ function PatientList(): JSX.Element {
               <GlassButton
                 variant="primary"
                 onClick={handleCreatePatient}
-                icon={<PlusOutlined />}
+                icon={isEditing ? <EditOutlined /> : <PlusOutlined />}
               >
-                Create Patient
+                {isEditing ? "Save Changes" : "Create Patient"}
               </GlassButton>
             </div>
           </Form>
