@@ -184,7 +184,9 @@ function PatientList(): JSX.Element {
       patient_uid: selectedPatient.patient_uid,
       height: selectedPatient.patient_details.height,
       weight: selectedPatient.patient_details.weight,
-      medications: (selectedPatient.patient_details.medications || []).join(", "),
+      medications: (selectedPatient.patient_details.medications || []).join(
+        ", ",
+      ),
       conditions: (selectedPatient.patient_details.conditions || []).join(", "),
       notes: (selectedPatient.patient_details.notes || []).join(", "),
     });
@@ -198,30 +200,39 @@ function PatientList(): JSX.Element {
       const values = await form.validateFields();
 
       // Convert height and weight to numbers if they are strings
-      const height = typeof values.height === 'string' ? parseFloat(values.height) : values.height;
-      const weight = typeof values.weight === 'string' ? parseFloat(values.weight) : values.weight;
+      const height =
+        typeof values.height === "string"
+          ? parseFloat(values.height)
+          : values.height;
+      const weight =
+        typeof values.weight === "string"
+          ? parseFloat(values.weight)
+          : values.weight;
 
       // Parse medications, conditions, and notes from comma-separated strings
-      const medications = values.medications && typeof values.medications === 'string'
-        ? values.medications
-            .split(",")
-            .map((med) => med.trim())
-            .filter((med) => med.length > 0)
-        : [];
+      const medications =
+        values.medications && typeof values.medications === "string"
+          ? values.medications
+              .split(",")
+              .map((med) => med.trim())
+              .filter((med) => med.length > 0)
+          : [];
 
-      const conditions = values.conditions && typeof values.conditions === 'string'
-        ? values.conditions
-            .split(",")
-            .map((condition) => condition.trim())
-            .filter((condition) => condition.length > 0)
-        : [];
+      const conditions =
+        values.conditions && typeof values.conditions === "string"
+          ? values.conditions
+              .split(",")
+              .map((condition) => condition.trim())
+              .filter((condition) => condition.length > 0)
+          : [];
 
-      const notes = values.notes && typeof values.notes === 'string'
-        ? values.notes
-            .split(",")
-            .map((note) => note.trim())
-            .filter((note) => note.length > 0)
-        : [];
+      const notes =
+        values.notes && typeof values.notes === "string"
+          ? values.notes
+              .split(",")
+              .map((note) => note.trim())
+              .filter((note) => note.length > 0)
+          : [];
 
       if (isEditing && selectedPatient) {
         const updatedPatient: Patient = {
@@ -715,7 +726,8 @@ function PatientList(): JSX.Element {
                 <div>
                   <p className="text-label text-white/50 mb-1">Conditions</p>
                   <div className="text-white">
-                    {selectedPatient.patient_details.conditions && selectedPatient.patient_details.conditions.length > 0
+                    {selectedPatient.patient_details.conditions &&
+                    selectedPatient.patient_details.conditions.length > 0
                       ? selectedPatient.patient_details.conditions.join(", ")
                       : "—"}
                   </div>
@@ -723,7 +735,8 @@ function PatientList(): JSX.Element {
                 <div>
                   <p className="text-label text-white/50 mb-1">Medications</p>
                   <div className="text-white">
-                    {selectedPatient.patient_details.medications && selectedPatient.patient_details.medications.length > 0
+                    {selectedPatient.patient_details.medications &&
+                    selectedPatient.patient_details.medications.length > 0
                       ? selectedPatient.patient_details.medications.join(", ")
                       : "—"}
                   </div>
@@ -1237,9 +1250,7 @@ function PatientList(): JSX.Element {
                   label={
                     <span className="text-white/90 font-medium">Height</span>
                   }
-                  rules={[
-                    { required: true, message: "Required" },
-                  ]}
+                  rules={[{ required: true, message: "Required" }]}
                 >
                   <Input
                     type="number"
@@ -1255,9 +1266,7 @@ function PatientList(): JSX.Element {
                   label={
                     <span className="text-white/90 font-medium">Weight</span>
                   }
-                  rules={[
-                    { required: true, message: "Required" },
-                  ]}
+                  rules={[{ required: true, message: "Required" }]}
                 >
                   <Input
                     type="number"
