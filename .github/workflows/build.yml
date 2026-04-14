@@ -92,7 +92,7 @@ jobs:
         with:
           name: sonorus-windows-build
           path: |
-            dist/**/*.exe
-            dist/**/*.exe.blockmap
+            dist/*.exe
+            dist/*.exe.blockmap
             dist/latest*.yml
           retention-days: 30
